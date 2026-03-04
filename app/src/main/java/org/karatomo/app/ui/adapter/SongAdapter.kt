@@ -17,15 +17,22 @@ class SongAdapter(private val songs: MutableList<Song>) :
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val song = songs[position]
-        holder.binding.tvTitle.text = song.title ?: "(제목 없음)"
-        holder.binding.tvSinger.text = song.singer ?: "(가수 없음)"
-        holder.binding.tvNo.text = "${song.brand} ${song.no}"
+        
+        // 가끔 title 자체가 null로 파싱될 때를 대비합니다.
+        val displayTitle = song.title ?: "(제목 없음)"
+        val displaySinger = song.singer ?: "(가수 없음)"
+        val displayBrand = song.brand ?: ""
+        val displayNo = song.no ?: ""
+
+        holder.binding.tvTitle.text = displayTitle
+        holder.binding.tvSinger.text = displaySinger
+        holder.binding.tvNo.text = "$displayBrand $displayNo"
 
         holder.binding.btnBookmark.setOnClickListener {
             BookmarkManager.addSong(song)
-            Toast.makeText(holder.itemView.context, "${song.title} 북마크 추가", Toast.LENGTH_SHORT).show()
+            Toast.makeText(holder.itemView.context, "$displayTitle 북마크 추가", Toast.LENGTH_SHORT).show()
         }
     }
 
