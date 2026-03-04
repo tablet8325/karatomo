@@ -18,15 +18,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
-
-      # gradlew 파일에 실행 권한 부여
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # APK 빌드 실행
+          # 캐시 기능을 잠시 꺼서 클린 빌드를 유도합니다.
+          
+      # gradlew 파일에 문제가 있을 수 있으므로 
+      # 시스템에 설치된 gradle을 사용하여 빌드합니다.
       - name: Build with Gradle
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       # 빌드된 APK 파일을 다운로드 가능하게 업로드
       - name: Upload APK
