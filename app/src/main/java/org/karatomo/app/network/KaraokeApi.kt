@@ -8,8 +8,12 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface KaraokeApiService {
-    @GET("karaoke.json")
-    suspend fun getSongs(@Query("brand") brand: String): List<Song>
+    // 1. .json을 제거하고 'karaoke'로 변경합니다.
+    @GET("karaoke")
+    suspend fun getSongs(
+        @Query("brand") brand: String,
+        @Query("query") query: String = "" // 검색어가 없으면 신곡 위주로 나옵니다.
+    ): List<Song>
 }
 
 object KaraokeApi {
@@ -22,7 +26,7 @@ object KaraokeApi {
         .build()
 
     val service: KaraokeApiService = Retrofit.Builder()
-        .baseUrl("https://api.manana.kr/")
+        .baseUrl("https://api.manana.kr/") // 베이스 주소는 맞습니다!
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
