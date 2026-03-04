@@ -25,23 +25,23 @@ class NewSongFragment : Fragment() {
 
     private var currentJob: Job? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    return try {
         _binding = FragmentNewSongBinding.inflate(inflater, container, false)
-
+        // 일단 어댑터고 뭐고 다 주석 처리! 오직 화면만 띄워봅니다.
+        /*
         adapter = SongAdapter(mutableListOf())
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
-
-        progressBar = binding.progressBar
-        tvMessage = binding.tvMessage
-
-        binding.btnTj.setOnClickListener { loadSongs("tj") }
-        binding.btnKy.setOnClickListener { loadSongs("ky") }
-        binding.btnJoy.setOnClickListener { loadSongs("joysound") }
-        binding.btnDam.setOnClickListener { loadSongs("dam") }
-
-        return binding.root
+        */
+        binding.root
+    } catch (e: Exception) {
+        // 만약 여기서 터진다면 XML 레이아웃 자체의 문제입니다.
+        val tv = TextView(requireContext())
+        tv.text = "XML 바인딩 실패: ${e.message}"
+        tv
     }
+}
 
 private fun loadSongs(brand: String) {
     currentJob?.cancel()
