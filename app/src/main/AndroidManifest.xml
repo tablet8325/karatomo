@@ -6,10 +6,8 @@
     <application
         android:allowBackup="true"
         android:label="Karatomo"
-        /* 1. 아이콘 경로를 실제 파일 위치인 @drawable/icon으로 연결 */
         android:icon="@drawable/icon"
         android:roundIcon="@drawable/icon"
-        /* 2. 별도의 themes.xml 없이도 작동하는 기본 내장 테마로 변경 */
         android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar">
         
         <activity 
@@ -21,4 +19,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
