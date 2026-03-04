@@ -19,18 +19,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 에러 방지를 위해 특정 Gradle 버전(8.2)을 강제로 설치합니다.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.2
+          gradle-version: 8.4
 
-      # 설치된 8.2 버전으로 빌드합니다.
-      - name: Build with Gradle 8.2
+      - name: Build with Gradle
         run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: karatomo-debug-apk
+          name: karatomo-app-debug
           path: app/build/outputs/apk/debug/*.apk
