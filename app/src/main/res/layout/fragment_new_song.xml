@@ -1,41 +1,43 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
-
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-        <Button android:id="@+id/btnTj" android:layout_width="0dp" android:layout_weight="1" android:text="TJ"/>
-        <Button android:id="@+id/btnKy" android:layout_width="0dp" android:layout_weight="1" android:text="KY"/>
-        <Button android:id="@+id/btnJoy" android:layout_width="0dp" android:layout_weight="1" android:text="JOYSOUND"/>
-        <Button android:id="@+id/btnDam" android:layout_width="0dp" android:layout_weight="1" android:text="DAM"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button android:id="@+id/btnTj" android:layout_width="0dp" android:layout_weight="1" android:text="TJ"/>
+            <Button android:id="@+id/btnKy" android:layout_width="0dp" android:layout_weight="1" android:text="KY"/>
+            <Button android:id="@+id/btnJoy" android:layout_width="0dp" android:layout_weight="1" android:text="JOYSOUND"/>
+            <Button android:id="@+id/btnDam" android:layout_width="0dp" android:layout_weight="1" android:text="DAM"/>
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"/>
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"/>
-
-    <TextView
-        android:id="@+id/tvMessage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="14sp"
-        android:layout_marginTop="4dp"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"/>
-</LinearLayout>
+</layout>
