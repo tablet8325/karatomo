@@ -3,8 +3,8 @@ package org.karatomo.app
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import org.karatomo.app.ui.BookmarkFragment
-import org.karatomo.app.ui.NewSongFragment
+import androidx.fragment.app.Fragment
+import org.karatomo.app.ui.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,21 +12,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, NewSongFragment())
-                .commit()
+            replaceFragment(SearchFragment()) // 시작은 검색화면
         }
 
-        findViewById<Button>(R.id.btnNavNew).setOnClickListener {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, NewSongFragment())
-                .commit()
-        }
+        findViewById<Button>(R.id.btnNavSearch).setOnClickListener { replaceFragment(SearchFragment()) }
+        findViewById<Button>(R.id.btnNavNew).setOnClickListener { replaceFragment(NewSongFragment()) }
+        findViewById<Button>(R.id.btnNavBookmark).setOnClickListener { replaceFragment(BookmarkFragment()) }
+    }
 
-        findViewById<Button>(R.id.btnNavBookmark).setOnClickListener {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, BookmarkFragment())
-                .commit()
-        }
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 }
