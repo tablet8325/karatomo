@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        // Gradle 8.6과 찰떡궁합인 플러그인 버전입니다.
         classpath "com.android.tools.build:gradle:8.4.0"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"
     }
