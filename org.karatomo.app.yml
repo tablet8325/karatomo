@@ -1,0 +1,10 @@
+category: Music & Audio
+license: MIT
+repo: https://github.com/USERNAME/karatomo
+commit: v1.0.0
+build:
+  - gradle
+gradle:
+  path: app
+icon: app/src/main/res/drawable/icon.png
+autoUpdate: false
