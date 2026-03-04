@@ -1,6 +1,7 @@
 package org.karatomo.app.ui
 
-import android.view.*
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import org.karatomo.app.databinding.ItemPlaylistBinding
 import org.karatomo.app.model.Playlist
