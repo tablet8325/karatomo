@@ -8,11 +8,11 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface KaraokeApiService {
-    // 1. .json을 제거하고 'karaoke'로 변경합니다.
-    @GET("karaoke")
+    // 엔드포인트를 .json으로 명시하고 query 파라미터를 확실히 잡습니다.
+    @GET("karaoke.json")
     suspend fun getSongs(
         @Query("brand") brand: String,
-        @Query("query") query: String = "" // 검색어가 없으면 신곡 위주로 나옵니다.
+        @Query("query") query: String? = null // 검색용
     ): List<Song>
 }
 
