@@ -19,19 +19,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 새로 만든 gradlew 파일에 실행 권한 부여
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # Gradle 8.6 설치 및 빌드
+      # 1. Gradle 8.6 환경을 서버에 직접 구축합니다.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
 
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
+      # 2. 저장소의 gradlew 대신 서버의 gradle 명령어를 직접 실행합니다.
+      # 이렇게 하면 'GradleWrapperMain' 클래스 누락 문제를 완벽히 우회합니다.
+      - name: Build with System Gradle
+        run: gradle assembleDebug
 
+      # 3. 빌드된 APK 파일 업로드
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
