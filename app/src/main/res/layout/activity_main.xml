@@ -14,24 +14,11 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:background="#F5F5F5"
-        android:elevation="8dp">
+        android:background="#1A1A1A"
+        android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnNavNew"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="신곡/검색"
-            style="?android:attr/borderlessButtonStyle"/>
-
-        <Button
-            android:id="@+id/btnNavBookmark"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="보관함"
-            style="?android:attr/borderlessButtonStyle"/>
+        <Button android:id="@+id/btnNavSearch" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="검색" android:textColor="#FFFFFF" style="?android:attr/borderlessButtonStyle"/>
+        <Button android:id="@+id/btnNavNew" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="신곡" android:textColor="#FFFFFF" style="?android:attr/borderlessButtonStyle"/>
+        <Button android:id="@+id/btnNavBookmark" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="보관함" android:textColor="#FFFFFF" style="?android:attr/borderlessButtonStyle"/>
     </LinearLayout>
 </RelativeLayout>
