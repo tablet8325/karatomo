@@ -3,7 +3,7 @@ name: Android Build APK
 on:
   push:
     branches: [ "main", "master" ]
-  workflow_dispatch: # 수동 실행 버튼 활성화
+  workflow_dispatch: 
 
 jobs:
   build:
@@ -14,13 +14,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: uses: actions/setup-java@v4
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      # 중요: gradlew 파일에 실행 권한을 부여합니다.
+      # gradlew 파일에 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
