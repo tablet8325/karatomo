@@ -40,7 +40,6 @@ class NewSongFragment : Fragment() {
         binding.btnJoy.setOnClickListener { loadSongs("joysound") }
         binding.btnDam.setOnClickListener { loadSongs("dam") }
 
-        loadSongs("tj")
         return binding.root
     }
 
