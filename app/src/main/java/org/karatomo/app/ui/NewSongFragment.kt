@@ -25,23 +25,27 @@ class NewSongFragment : Fragment() {
 
     private var currentJob: Job? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentNewSongBinding.inflate(inflater, container, false)
+override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    _binding = FragmentNewSongBinding.inflate(inflater, container, false)
+    
+    // 이 순서가 매우 중요합니다.
+    progressBar = binding.progressBar
+    tvMessage = binding.tvMessage
 
-        adapter = SongAdapter(mutableListOf())
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.adapter = adapter
+    adapter = SongAdapter(mutableListOf())
+    binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    binding.recyclerView.adapter = adapter
 
-        progressBar = binding.progressBar
-        tvMessage = binding.tvMessage
+    binding.btnTj.setOnClickListener { loadSongs("tj") }
+    binding.btnKy.setOnClickListener { loadSongs("ky") }
+    binding.btnJoy.setOnClickListener { loadSongs("joysound") }
+    binding.btnDam.setOnClickListener { loadSongs("dam") }
 
-        binding.btnTj.setOnClickListener { loadSongs("tj") }
-        binding.btnKy.setOnClickListener { loadSongs("ky") }
-        binding.btnJoy.setOnClickListener { loadSongs("joysound") }
-        binding.btnDam.setOnClickListener { loadSongs("dam") }
+    // 시작하자마자 데이터를 불러오고 싶다면 여기서 호출
+    // loadSongs("tj") 
 
-        return binding.root
-    }
+    return binding.root
+}
 
 private fun loadSongs(brand: String) {
     currentJob?.cancel()
