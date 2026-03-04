@@ -40,7 +40,7 @@ class NewSongFragment : Fragment() {
 
         // 브랜드 버튼들
         view.findViewById<Button>(R.id.btnTj).setOnClickListener { selectedBrand = "tj"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnKy).setOnClickListener { selectedBrand = "ky"; loadSongs(selectedBrand) }
+        view.findViewById<Button>(R.id.btnKy).setOnClickListener { selectedBrand = "kumyoung"; loadSongs(selectedBrand) }
         view.findViewById<Button>(R.id.btnJoy).setOnClickListener { selectedBrand = "joysound"; loadSongs(selectedBrand) }
         view.findViewById<Button>(R.id.btnDam).setOnClickListener { selectedBrand = "dam"; loadSongs(selectedBrand) }
 
