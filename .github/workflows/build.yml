@@ -1,21 +1,36 @@
-name: Android Build
+name: Android Build APK
 
 on:
   push:
-    branches: [main]
+    branches: [ "main", "master" ]
+  workflow_dispatch: # 수동 실행 버튼 활성화
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
 
-    - name: Build APK
-      run: ./gradlew assembleDebug
+      # 중요: gradlew 파일에 실행 권한을 부여합니다.
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # APK 빌드 실행
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+
+      # 빌드된 APK 파일을 다운로드 가능하게 업로드
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: karatomo-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
