@@ -1,38 +1,38 @@
 package org.karatomo.app.ui.adapter
 
 import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import org.karatomo.app.databinding.ItemSongBinding
+import org.karatomo.app.R
 import org.karatomo.app.manager.BookmarkManager
 import org.karatomo.app.network.Song
 
 class SongAdapter(private val songs: MutableList<Song>) :
     RecyclerView.Adapter<SongAdapter.ViewHolder>() {
 
-    inner class ViewHolder(val binding: ItemSongBinding) : RecyclerView.ViewHolder(binding.root)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val tvTitle: TextView = view.findViewById(R.id.tvTitle)
+        val tvSinger: TextView = view.findViewById(R.id.tvSinger)
+        val tvNo: TextView = view.findViewById(R.id.tvNo)
+        val btnBookmark: Button = view.findViewById(R.id.btnBookmark)
     }
 
-override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_song, parent, false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val song = songs[position]
-        
-        // 가끔 title 자체가 null로 파싱될 때를 대비합니다.
-        val displayTitle = song.title ?: "(제목 없음)"
-        val displaySinger = song.singer ?: "(가수 없음)"
-        val displayBrand = song.brand ?: ""
-        val displayNo = song.no ?: ""
+        holder.tvTitle.text = song.title ?: "(제목 없음)"
+        holder.tvSinger.text = song.singer ?: "(가수 없음)"
+        holder.tvNo.text = "${song.brand ?: ""} ${song.no ?: ""}"
 
-        holder.binding.tvTitle.text = displayTitle
-        holder.binding.tvSinger.text = displaySinger
-        holder.binding.tvNo.text = "$displayBrand $displayNo"
-
-        holder.binding.btnBookmark.setOnClickListener {
+        holder.btnBookmark.setOnClickListener {
             BookmarkManager.addSong(song)
-            Toast.makeText(holder.itemView.context, "$displayTitle 북마크 추가", Toast.LENGTH_SHORT).show()
+            Toast.makeText(holder.itemView.context, "${song.title} 북마크 추가", Toast.LENGTH_SHORT).show()
         }
     }
 
