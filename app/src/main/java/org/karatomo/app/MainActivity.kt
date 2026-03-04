@@ -1,17 +1,24 @@
 package org.karatomo.app
 
 import android.os.Bundle
-import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import org.karatomo.app.ui.NewSongFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // 레이아웃 파일을 부르지 않고, 코드로 직접 글자를 띄워봅니다.
-        // 이렇게 해서 앱이 켜진다면 '레이아웃 XML'이나 '프래그먼트'가 범인입니다.
-        val tv = TextView(this)
-        tv.text = "메인 화면 접속 성공! 프래그먼트 로딩 전입니다."
-        setContentView(tv)
+        setContentView(R.layout.activity_main)
+
+        try {
+            if (savedInstanceState == null) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, NewSongFragment())
+                    .commit()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "프래그먼트 로딩 실패: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
     }
 }
