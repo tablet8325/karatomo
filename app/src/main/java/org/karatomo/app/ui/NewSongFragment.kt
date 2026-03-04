@@ -26,25 +26,13 @@ class NewSongFragment : Fragment() {
     private var currentJob: Job? = null
 
 override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-    _binding = FragmentNewSongBinding.inflate(inflater, container, false)
-    
-    // 이 순서가 매우 중요합니다.
-    progressBar = binding.progressBar
-    tvMessage = binding.tvMessage
-
-    adapter = SongAdapter(mutableListOf())
-    binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-    binding.recyclerView.adapter = adapter
-
-    binding.btnTj.setOnClickListener { loadSongs("tj") }
-    binding.btnKy.setOnClickListener { loadSongs("ky") }
-    binding.btnJoy.setOnClickListener { loadSongs("joysound") }
-    binding.btnDam.setOnClickListener { loadSongs("dam") }
-
-    // 시작하자마자 데이터를 불러오고 싶다면 여기서 호출
-    // loadSongs("tj") 
-
-    return binding.root
+    // 바인딩이고 뭐고 다 치우고, 시스템이 제공하는 가장 기본 텍스트뷰 하나만 띄웁니다.
+    val tv = TextView(requireContext()).apply {
+        text = "여기가 보이면 레이아웃(XML) 지뢰입니다."
+        textSize = 20f
+        setPadding(50, 50, 50, 50)
+    }
+    return tv
 }
 
 private fun loadSongs(brand: String) {
