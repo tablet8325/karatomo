@@ -18,14 +18,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          # 캐시 기능을 잠시 꺼서 클린 빌드를 유도합니다.
-          
-      # gradlew 파일에 문제가 있을 수 있으므로 
-      # 시스템에 설치된 gradle을 사용하여 빌드합니다.
-      - name: Build with Gradle
+
+      # 에러 방지를 위해 특정 Gradle 버전(8.2)을 강제로 설치합니다.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.2
+
+      # 설치된 8.2 버전으로 빌드합니다.
+      - name: Build with Gradle 8.2
         run: gradle assembleDebug
 
-      # 빌드된 APK 파일을 다운로드 가능하게 업로드
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
