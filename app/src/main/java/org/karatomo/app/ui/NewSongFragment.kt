@@ -43,31 +43,32 @@ class NewSongFragment : Fragment() {
         return binding.root
     }
 
-    private fun loadSongs(brand: String) {
-        currentJob?.cancel()
-        progressBar.visibility = View.VISIBLE
-        tvMessage.text = ""
+private fun loadSongs(brand: String) {
+    currentJob?.cancel()
+    progressBar.visibility = View.VISIBLE
+    tvMessage.text = "데이터 불러오는 중..."
 
-        currentJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val list: List<Song> = KaraokeApi.service.getSongs(brand)
-                withContext(Dispatchers.Main) {
-                    adapter.updateData(list)
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = if (list.isEmpty()) "곡이 없습니다." else ""
-                    Toast.makeText(requireContext(), "$brand 곡 ${list.size}개 로드 완료", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: CancellationException) {
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = "곡 로드 실패"
-                    Toast.makeText(requireContext(), "$brand 곡 로드 실패", Toast.LENGTH_SHORT).show()
-                }
+    currentJob = lifecycleScope.launch(Dispatchers.IO) {
+        try {
+            // 1. API 호출 시도
+            val list = KaraokeApi.service.getSongs(brand)
+            
+            withContext(Dispatchers.Main) {
+                adapter.updateData(list)
+                progressBar.visibility = View.GONE
+                tvMessage.text = if (list.isEmpty()) "목록이 비어있습니다." else ""
+            }
+        } catch (e: Exception) {
+            // 2. 에러가 나도 앱이 죽지 않게 잡아서 화면에 띄움
+            withContext(Dispatchers.Main) {
+                progressBar.visibility = View.GONE
+                tvMessage.text = "에러 발생: ${e.localizedMessage}"
+                // 사지방 환경에서 가장 중요한 에러 메시지 확인용 토스트
+                Toast.makeText(requireContext(), "API 에러: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
+}
 
     override fun onDestroyView() {
         super.onDestroyView()
