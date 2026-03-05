@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
 import org.karatomo.app.R
 import org.karatomo.app.network.KaraokeApi
-import org.karatomo.app.network.Song
 import org.karatomo.app.ui.adapter.SongAdapter
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
+    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private var currentJob: Job? = null
 
@@ -24,7 +24,7 @@ class SearchFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
 
         progressBar = view.findViewById(R.id.progressBar)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView = view.findViewById(R.id.recyclerView)
         val etSearch = view.findViewById<EditText>(R.id.etSearch)
         val btnSearch = view.findViewById<Button>(R.id.btnSearch)
         val rgBrand = view.findViewById<RadioGroup>(R.id.rgBrand)
@@ -48,19 +48,16 @@ class SearchFragment : Fragment() {
                 R.id.rbDam -> "dam"
                 else -> "tj"
             }
-
-            loadSongsByCategory(categoryPos, brand, query)
+            loadSongs(categoryPos, brand, query)
         }
         return view
     }
 
-    private fun loadSongsByCategory(category: Int, brand: String, query: String) {
+    private fun loadSongs(category: Int, brand: String, query: String) {
         currentJob?.cancel()
         progressBar.visibility = View.VISIBLE
-        
         currentJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // 카테고리별 API 분기 호출
                 val list = when(category) {
                     0 -> KaraokeApi.service.searchByTitle(query, brand)
                     1 -> KaraokeApi.service.searchBySinger(query, brand)
@@ -72,23 +69,18 @@ class SearchFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
+                    adapter.updateData(list)
                     if (list.isEmpty()) {
-                        adapter.updateData(mutableListOf())
                         Toast.makeText(context, "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
                     } else {
-                        adapter.updateData(list)
+                        // [핵심] 리스트 최상단으로 자동 스크롤
+                        recyclerView.scrollToPosition(0)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    val msg = when(e) {
-                        is UnknownHostException -> "인터넷 연결을 확인해주세요."
-                        is SocketTimeoutException -> "서버 응답 시간이 초과되었습니다."
-                        else -> "결과를 불러올 수 없습니다."
-                    }
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    adapter.updateData(mutableListOf())
+                    Toast.makeText(context, "불러오기 실패. 인터넷을 확인하세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
