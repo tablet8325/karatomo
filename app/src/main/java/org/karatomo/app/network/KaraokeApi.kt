@@ -21,25 +21,26 @@ interface KaraokeApiService {
     @GET("karaoke/song/{title}.json")
     suspend fun searchByTitle(@Path("title") title: String, @Query("brand") brand: String): List<Song>
 
-    // [가수 검색]
     @GET("karaoke/singer/{singer}.json")
     suspend fun searchBySinger(@Path("singer") singer: String, @Query("brand") brand: String): List<Song>
 
-    // [곡 번호 검색]
     @GET("karaoke/no/{no}.json")
     suspend fun searchByNo(@Path("no") no: String, @Query("brand") brand: String): List<Song>
 
-    // [작곡가 검색]
     @GET("karaoke/composer/{composer}.json")
     suspend fun searchByComposer(@Path("composer") composer: String, @Query("brand") brand: String): List<Song>
 
-    // [작사가 검색]
     @GET("karaoke/lyricist/{lyricist}.json")
     suspend fun searchByLyricist(@Path("lyricist") lyricist: String, @Query("brand") brand: String): List<Song>
 
-    // [신곡 목록]
     @GET("karaoke.json")
     suspend fun getNewSongs(@Query("brand") brand: String): List<Song>
+
+    @GET("karaoke/release.json")
+    suspend fun getReleaseSongs(
+        @Query("release") release: String, // 예: 202603
+        @Query("brand") brand: String
+    ): List<Song>
 }
 
 object KaraokeApi {
