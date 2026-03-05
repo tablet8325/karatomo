@@ -17,7 +17,7 @@ data class Song(
 )
 
 interface KaraokeApiService {
-    // [제목 검색]
+    // [검색 API: Choice 2 방식]
     @GET("karaoke/song/{title}.json")
     suspend fun searchByTitle(@Path("title") title: String, @Query("brand") brand: String): List<Song>
 
@@ -33,19 +33,13 @@ interface KaraokeApiService {
     @GET("karaoke/lyricist/{lyricist}.json")
     suspend fun searchByLyricist(@Path("lyricist") lyricist: String, @Query("brand") brand: String): List<Song>
 
-    @GET("karaoke.json")
-    suspend fun getNewSongs(@Query("brand") brand: String): List<Song>
-
+    // [월별 신곡 API: Choice 2 방식]
     @GET("karaoke/release.json")
-    suspend fun getReleaseSongs(
-        @Query("release") release: String, // 예: 202603
-        @Query("brand") brand: String
-    ): List<Song>
+    suspend fun getReleaseSongs(@Query("release") release: String, @Query("brand") brand: String): List<Song>
 }
 
 object KaraokeApi {
     private const val BASE_URL = "https://api.manana.kr/"
-
     val service: KaraokeApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
