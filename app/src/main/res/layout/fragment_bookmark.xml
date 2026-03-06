@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout
-        android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <Button
+        android:id="@+id/btnAddPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="플레이리스트 추가" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPlaylists"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
-
-        <Button
-            android:id="@+id/btnAddPlaylist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="플레이리스트 추가"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvPlaylists"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
-</layout>
+        android:layout_marginTop="8dp" />
+</LinearLayout>
