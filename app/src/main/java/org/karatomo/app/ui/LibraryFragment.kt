@@ -14,7 +14,7 @@ import org.karatomo.app.managers.BookmarkManager
 import org.karatomo.app.ui.adapter.PlaylistTabAdapter
 
 class LibraryFragment : Fragment() {
-    private var tabAdapter: PlaylistTabAdapter? = null
+    private lateinit var tabAdapter: PlaylistTabAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
@@ -28,42 +28,43 @@ class LibraryFragment : Fragment() {
                 intent.putExtra("playlistName", name)
                 startActivity(intent)
             },
-            onAddClick = { showAddDialog() }
+            onAddClick = { showCreateDialog() }
         )
 
         rv.layoutManager = LinearLayoutManager(context)
         rv.adapter = tabAdapter
 
-        fab.setOnClickListener { showAddDialog() }
+        // 오른쪽 하단 동그란 버튼 누르면 입력창 뜸
+        fab.setOnClickListener { showCreateDialog() }
         
-        refresh()
+        loadList()
         return view
     }
 
-    private fun showAddDialog() {
-        val et = EditText(requireContext())
+    private fun showCreateDialog() {
+        val input = EditText(requireContext())
         AlertDialog.Builder(requireContext())
-            .setTitle("새 플레이리스트 생성")
-            .setMessage("이름을 입력하세요")
-            .setView(et)
-            .setPositiveButton("생성") { _, _ ->
-                val name = et.text.toString().trim()
+            .setTitle("새 플레이리스트")
+            .setMessage("이름을 정해주세요.")
+            .setView(input)
+            .setPositiveButton("만들기") { _, _ ->
+                val name = input.text.toString()
                 if (name.isNotEmpty()) {
                     BookmarkManager.createPlaylist(requireContext(), name)
-                    refresh()
+                    loadList() // 목록 새로고침
                 }
             }
             .setNegativeButton("취소", null)
             .show()
     }
 
-    private fun refresh() {
-        val names = BookmarkManager.getPlaylistNames()
-        tabAdapter?.submitList(names)
+    private fun loadList() {
+        val playlists = BookmarkManager.getPlaylistNames()
+        tabAdapter.submitList(playlists)
     }
 
     override fun onResume() {
         super.onResume()
-        refresh()
+        loadList()
     }
 }
