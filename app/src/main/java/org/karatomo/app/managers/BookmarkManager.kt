@@ -87,6 +87,11 @@ object BookmarkManager {
         saveData(context)
     }
 
+    fun removeSong(context: Context, playlistName: String, song: Song) {
+        playlists[playlistName]?.remove(song)
+        saveData(context)
+    }
+
     private fun saveData(context: Context) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val json = Gson().toJson(playlists)
