@@ -11,8 +11,6 @@ import kotlinx.coroutines.*
 import org.karatomo.app.R
 import org.karatomo.app.network.KaraokeApi
 import org.karatomo.app.ui.adapter.SongAdapter
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
@@ -37,7 +35,7 @@ class SearchFragment : Fragment() {
         btnSearch.setOnClickListener {
             val query = etSearch.text.toString().trim()
             if (query.isBlank()) {
-                Toast.makeText(context, "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -56,7 +54,8 @@ class SearchFragment : Fragment() {
     private fun loadSongs(category: Int, brand: String, query: String) {
         currentJob?.cancel()
         progressBar.visibility = View.VISIBLE
-        currentJob = lifecycleScope.launch(Dispatchers.IO) {
+        
+        currentJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val list = when(category) {
                     0 -> KaraokeApi.service.searchByTitle(query, brand)
@@ -68,19 +67,21 @@ class SearchFragment : Fragment() {
                 }
 
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext // Fragment가 활성 상태일 때만 UI 업데이트
+                    
                     progressBar.visibility = View.GONE
                     adapter.updateData(list)
                     if (list.isEmpty()) {
-                        Toast.makeText(context, "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
                     } else {
-                        // [핵심] 리스트 최상단으로 자동 스크롤
                         recyclerView.scrollToPosition(0)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
-                    Toast.makeText(context, "불러오기 실패. 인터넷을 확인하세요.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "오류 발생: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
