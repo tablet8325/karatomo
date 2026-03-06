@@ -16,9 +16,9 @@ class SearchFragment : Fragment() {
     private var rvSearch: RecyclerView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // [수정] 수정된 순수 XML 레이아웃을 인플레이트함
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         
-        // XML ID와 매칭 확인 완료
         tvNoResult = view.findViewById(R.id.tvNoResult)
         rvSearch = view.findViewById(R.id.rvSearch)
         
@@ -27,7 +27,9 @@ class SearchFragment : Fragment() {
         rvSearch?.adapter = adapter
 
         val etSearch = view.findViewById<EditText>(R.id.etSearch)
-        view.findViewById<Button>(R.id.btnSearch).setOnClickListener {
+        val btnSearch = view.findViewById<Button>(R.id.btnSearch)
+
+        btnSearch.setOnClickListener {
             performSearch(etSearch.text.toString())
         }
         return view
@@ -40,7 +42,8 @@ class SearchFragment : Fragment() {
             override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
                 if (!isAdded) return
                 val list = response.body()
-                // 리스트가 실제 곡 정보를 담고 있는지 검증 (no 필드 체크)
+                
+                // 유효한 결과(곡 번호)가 있는지 체크
                 if (list.isNullOrEmpty() || list[0].no.isNullOrBlank()) {
                     tvNoResult?.visibility = View.VISIBLE
                     rvSearch?.visibility = View.GONE
