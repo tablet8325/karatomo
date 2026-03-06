@@ -14,49 +14,45 @@ import org.karatomo.app.ui.adapter.SongAdapter
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
-    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
-    private var currentJob: Job? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
 
         progressBar = view.findViewById(R.id.progressBar)
-        recyclerView = view.findViewById(R.id.recyclerView)
+        val rv = view.findViewById<RecyclerView>(R.id.recyclerView)
         val etSearch = view.findViewById<EditText>(R.id.etSearch)
         val btnSearch = view.findViewById<Button>(R.id.btnSearch)
         val rgBrand = view.findViewById<RadioGroup>(R.id.rgBrand)
-        val spinnerCategory = view.findViewById<Spinner>(R.id.spinnerCategory)
+        val spinner = view.findViewById<Spinner>(R.id.spinnerCategory)
 
         adapter = SongAdapter(mutableListOf())
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
 
         btnSearch.setOnClickListener {
             val query = etSearch.text.toString().trim()
-            if (query.isBlank()) {
-                Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            if (query.isEmpty()) return@setOnClickListener
 
-            val categoryPos = spinnerCategory.selectedItemPosition
             val brand = when(rgBrand.checkedRadioButtonId) {
                 R.id.rbKy -> "kumyoung"
                 R.id.rbJoy -> "joysound"
                 R.id.rbDam -> "dam"
                 else -> "tj"
             }
+            
+            val categoryPos = spinner.selectedItemPosition
             loadSongs(categoryPos, brand, query)
         }
         return view
     }
 
     private fun loadSongs(category: Int, brand: String, query: String) {
-        currentJob?.cancel()
         progressBar.visibility = View.VISIBLE
         
-        currentJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
+                // 선택한 카테고리에 맞는 전용 통로를 호출합니다.
                 val list = when(category) {
                     0 -> KaraokeApi.service.searchByTitle(query, brand)
                     1 -> KaraokeApi.service.searchBySinger(query, brand)
@@ -67,21 +63,15 @@ class SearchFragment : Fragment() {
                 }
 
                 withContext(Dispatchers.Main) {
-                    if (!isAdded) return@withContext // Fragment가 활성 상태일 때만 UI 업데이트
-                    
+                    if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
                     adapter.updateData(list)
-                    if (list.isEmpty()) {
-                        Toast.makeText(requireContext(), "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        recyclerView.scrollToPosition(0)
-                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "오류 발생: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "검색 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
