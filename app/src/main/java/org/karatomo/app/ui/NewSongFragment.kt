@@ -31,6 +31,7 @@ class NewSongFragment : Fragment() {
         rv.layoutManager = LinearLayoutManager(context)
         rv.adapter = adapter
 
+        // 최근 12개월 생성 (yyyyMM 형식)
         val sdf = SimpleDateFormat("yyyyMM", Locale.getDefault())
         val cal = Calendar.getInstance()
         for (i in 0 until 12) {
@@ -66,26 +67,25 @@ class NewSongFragment : Fragment() {
         val selectedMonth = spinnerMonth.selectedItem?.toString() ?: return
         progressBar.visibility = View.VISIBLE
         
-        // [수정] interface에 정의된 대로 Call 객체를 받아서 enqueue를 호출함
+        // [핵심 수정] Call 객체를 명시적으로 받고 Callback을 연결하여 타입 미스매치 방지
         val call: Call<List<Song>> = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
         
         call.enqueue(object : Callback<List<Song>> {
             override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
+                if (!isAdded) return // 프래그먼트가 유효할 때만 처리
                 progressBar.visibility = View.GONE
                 if (response.isSuccessful) {
                     val list = response.body()
-                    if (list.isNullOrEmpty()) {
-                        adapter.updateData(emptyList())
-                    } else {
-                        adapter.updateData(list)
-                    }
+                    adapter.updateData(list ?: emptyList())
                 } else {
-                    Toast.makeText(context, "오류: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "에러: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
+
             override fun onFailure(call: Call<List<Song>>, t: Throwable) {
+                if (!isAdded) return
                 progressBar.visibility = View.GONE
-                Toast.makeText(context, "실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
