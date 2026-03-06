@@ -1,70 +1,59 @@
 package org.karatomo.app.ui
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.EditText
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.karatomo.app.R
 import org.karatomo.app.managers.BookmarkManager
 import org.karatomo.app.ui.adapter.PlaylistTabAdapter
+import org.karatomo.app.ui.adapter.SongAdapter
 
 class LibraryFragment : Fragment() {
-    private lateinit var tabAdapter: PlaylistTabAdapter
+    private lateinit var tabRecyclerView: RecyclerView
+    private lateinit var songRecyclerView: RecyclerView
+    private lateinit var songAdapter: SongAdapter
+    private var currentPlaylistName: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
-        
-        val rv = view.findViewById<RecyclerView>(R.id.rvPlaylistTabs)
-        val fab = view.findViewById<FloatingActionButton>(R.id.fabAddPlaylist)
 
-        tabAdapter = PlaylistTabAdapter(
-            onItemClick = { name ->
-                val intent = Intent(requireContext(), PlaylistDetailActivity::class.java)
-                intent.putExtra("playlist_name", name)
-                startActivity(intent)
+        tabRecyclerView = view.findViewById(R.id.rvPlaylistTabs)
+        songRecyclerView = view.findViewById(R.id.rvPlaylistSongs) // XML에 추가 필요
+        
+        // 1. 플레이리스트 탭 설정
+        val names = BookmarkManager.getPlaylistNames()
+        if (names.isNotEmpty()) currentPlaylistName = names[0]
+
+        val tabAdapter = PlaylistTabAdapter(
+            onItemClick = { name -> 
+                currentPlaylistName = name
+                updateSongList() // 탭 클릭 시 곡 목록 갱신
             },
-            onAddClick = { showCreateDialog() }
+            onAddClick = { /* 다이얼로그 로직 */ }
         )
+        tabRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        tabRecyclerView.adapter = tabAdapter
 
-        rv.layoutManager = LinearLayoutManager(context)
-        rv.adapter = tabAdapter
+        // 2. 곡 목록 설정 (첫 번째 리스트 바로 노출)
+        songAdapter = SongAdapter(BookmarkManager.getSongs(currentPlaylistName))
+        songRecyclerView.layoutManager = LinearLayoutManager(context)
+        songRecyclerView.adapter = songAdapter
 
-        // 오른쪽 하단 동그란 버튼 누르면 입력창 뜸
-        fab.setOnClickListener { showCreateDialog() }
-        
-        loadList()
+        view.findViewById<FloatingActionButton>(R.id.fabAddPlaylist).setOnClickListener {
+            // 상세 화면(편집모드)으로 이동
+            val intent = Intent(context, PlaylistDetailActivity::class.java)
+            intent.putExtra("playlist_name", currentPlaylistName)
+            startActivity(intent)
+        }
+
         return view
     }
 
-    private fun showCreateDialog() {
-        val input = EditText(requireContext())
-        AlertDialog.Builder(requireContext())
-            .setTitle("새 플레이리스트")
-            .setMessage("이름을 정해주세요.")
-            .setView(input)
-            .setPositiveButton("만들기") { _, _ ->
-                val name = input.text.toString()
-                if (name.isNotEmpty()) {
-                    BookmarkManager.createPlaylist(requireContext(), name)
-                    loadList() // 목록 새로고침
-                }
-            }
-            .setNegativeButton("취소", null)
-            .show()
-    }
-
-    private fun loadList() {
-        val playlists = BookmarkManager.getPlaylistNames()
-        tabAdapter.submitList(playlists)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadList()
+    private fun updateSongList() {
+        val songs = BookmarkManager.getSongs(currentPlaylistName)
+        songAdapter.updateData(songs)
     }
 }
