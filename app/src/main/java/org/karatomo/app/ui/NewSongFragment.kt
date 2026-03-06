@@ -16,74 +16,56 @@ import java.util.*
 
 class NewSongFragment : Fragment() {
     private lateinit var adapter: SongAdapter
-    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
-    private val apiMonths = mutableListOf<String>()
-    private val displayMonths = mutableListOf<String>()
+    private var currentBrand = "tj"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_new_song, container, false)
+        
         progressBar = view.findViewById(R.id.progressBar)
-        recyclerView = view.findViewById(R.id.recyclerView)
-        val rgBrand = view.findViewById<RadioGroup>(R.id.rgBrandNew)
-        val spinnerMonth = view.findViewById<Spinner>(R.id.spinnerMonth)
-
-        // 최근 12개월 생성
-        setupMonths()
-        spinnerMonth.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, displayMonths)
+        val rv = view.findViewById<RecyclerView>(R.id.recyclerView)
+        val rg = view.findViewById<RadioGroup>(R.id.rgBrand)
 
         adapter = SongAdapter(mutableListOf())
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
 
-        // 리스너: 변경 시 자동 로드
-        val listener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
-                fetch(rgBrand, spinnerMonth)
+        rg.setOnCheckedChangeListener { _, checkedId ->
+            currentBrand = when(checkedId) {
+                R.id.rbKy -> "kumyoung"
+                R.id.rbJoy -> "joysound"
+                R.id.rbDam -> "dam"
+                else -> "tj"
             }
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
+            loadNewSongs()
         }
-        spinnerMonth.onItemSelectedListener = listener
-        rgBrand.setOnCheckedChangeListener { _, _ -> fetch(rgBrand, spinnerMonth) }
 
+        loadNewSongs() // 초기 로딩
         return view
     }
 
-    private fun setupMonths() {
-        val cal = Calendar.getInstance()
-        val apiFmt = SimpleDateFormat("yyyyMM", Locale.KOREA)
-        val dispFmt = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
-        for (i in 0 until 12) {
-            apiMonths.add(apiFmt.format(cal.time))
-            displayMonths.add(dispFmt.format(cal.time))
-            cal.add(Calendar.MONTH, -1)
-        }
-    }
-
-    private fun fetch(rg: RadioGroup, sp: Spinner) {
-        val brand = when(rg.checkedRadioButtonId) {
-            R.id.rbKyNew -> "kumyoung"
-            R.id.rbJoyNew -> "joysound"
-            R.id.rbDamNew -> "dam"
-            else -> "tj"
-        }
-        val month = apiMonths[sp.selectedItemPosition]
-        load(month, brand)
-    }
-
-    private fun load(month: String, brand: String) {
+    private fun loadNewSongs() {
         progressBar.visibility = View.VISIBLE
-        lifecycleScope.launch(Dispatchers.IO) {
+        
+        // 현재 날짜 기준 YYYYMM 형식 생성 (예: 202603)
+        val releaseDate = SimpleDateFormat("yyyyMM", Locale.getDefault()).format(Date())
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val list = KaraokeApi.service.getReleaseSongs(month, brand)
+                // API 호출: release 파라미터 적용
+                val list = KaraokeApi.service.getNewSongs(releaseDate, currentBrand)
+                
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
                     adapter.updateData(list)
-                    // [핵심] 리스트 최상단으로 자동 스크롤
-                    recyclerView.scrollToPosition(0)
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { progressBar.visibility = View.GONE }
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "신곡 로딩 실패", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
