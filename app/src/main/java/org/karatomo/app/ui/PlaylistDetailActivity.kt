@@ -2,67 +2,80 @@ package org.karatomo.app.ui
 
 import android.os.Bundle
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import org.karatomo.app.R
 import org.karatomo.app.managers.BookmarkManager
-import org.karatomo.app.ui.adapter.PlaylistDetailAdapter
+import org.karatomo.app.ui.adapter.SongAdapter
 
 class PlaylistDetailActivity : AppCompatActivity() {
-    private lateinit var detailAdapter: PlaylistDetailAdapter
-    private lateinit var itemTouchHelper: ItemTouchHelper
-    private var playlistName: String = "기본 플레이리스트"
+    private lateinit var adapter: SongAdapter
+    private var playlistName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playlist_detail)
 
-        // 1. 데이터 가져오기 (이름표를 "playlist_name"으로 통일 권장)
         playlistName = intent.getStringExtra("playlist_name") ?: "기본 플레이리스트"
-        
-        // 2. 제목 설정 (XML에 tvPlaylistTitle이 있는지 꼭 확인!)
         val tvTitle = findViewById<TextView>(R.id.tvPlaylistTitle)
         tvTitle.text = playlistName
 
-        // 3. 데이터 로드
-        val songs = BookmarkManager.getSongs(playlistName).toMutableList()
         val rv = findViewById<RecyclerView>(R.id.rvPlaylistDetail)
-
-        // 4. 어댑터 먼저 생성
-        detailAdapter = PlaylistDetailAdapter(songs, 
-            onLongClick = { song ->
-                // 삭제 로직 추가 가능
-                BookmarkManager.removeSong(this, playlistName, song)
-                // 리스트 갱신 코드 필요시 추가
-            },
-            onDragStart = { vh -> itemTouchHelper.startDrag(vh) }
-        )
-
+        adapter = SongAdapter(BookmarkManager.getSongs(playlistName))
         rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = detailAdapter
+        rv.adapter = adapter
 
-        // 5. 드래그 앤 드롭 설정
-        val callback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                val from = viewHolder.adapterPosition
-                val to = target.adapterPosition
-                
-                detailAdapter.moveItem(from, to)
-                BookmarkManager.moveSong(this@PlaylistDetailActivity, playlistName, from, to)
-                return true
-            }
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-        }
-        
-        itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(rv)
-
-        // 6. 편집 모드 버튼 (XML에 ivEditMode가 있는지 확인)
+        // 편집 아이콘 클릭 시 메뉴 노출
         findViewById<ImageView>(R.id.ivEditMode).setOnClickListener {
-            detailAdapter.isEditMode = !detailAdapter.isEditMode
-            detailAdapter.notifyDataSetChanged() // 화면 갱신
+            showEditMenu()
         }
+    }
+
+    private fun showEditMenu() {
+        val menus = arrayOf("이름 변경", "브랜드 필터", "플레이리스트 삭제")
+        AlertDialog.Builder(this).setItems(menus) { _, which ->
+            when (which) {
+                0 -> showRenameDialog()
+                1 -> showFilterDialog()
+                2 -> showDeleteDialog()
+            }
+        }.show()
+    }
+
+    private fun showRenameDialog() {
+        val et = EditText(this).apply { setText(playlistName) }
+        AlertDialog.Builder(this).setTitle("이름 변경").setView(et)
+            .setPositiveButton("변경") { _, _ ->
+                val newName = et.text.toString()
+                if (BookmarkManager.renamePlaylist(this, playlistName, newName)) {
+                    playlistName = newName
+                    findViewById<TextView>(R.id.tvPlaylistTitle).text = playlistName
+                }
+            }.show()
+    }
+
+    private fun showFilterDialog() {
+        val brands = arrayOf("전체", "TJ", "금영", "Joysound", "DAM")
+        AlertDialog.Builder(this).setTitle("브랜드 선택").setItems(brands) { _, which ->
+            val filter = when(which) {
+                1 -> "tj"
+                2 -> "kumyoung"
+                3 -> "joysound"
+                4 -> "dam"
+                else -> "all"
+            }
+            val filtered = if (filter == "all") BookmarkManager.getSongs(playlistName)
+            else BookmarkManager.getSongs(playlistName).filter { it.brand.lowercase() == filter }
+            adapter.updateData(filtered)
+        }.show()
+    }
+
+    private fun showDeleteDialog() {
+        AlertDialog.Builder(this).setTitle("삭제").setMessage("이 플레이리스트를 삭제할까요?")
+            .setPositiveButton("삭제") { _, _ ->
+                BookmarkManager.deletePlaylist(this, playlistName)
+                finish()
+            }.show()
     }
 }
