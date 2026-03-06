@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.*
-import kotlinx.coroutines.*
 import org.karatomo.app.R
-import org.karatomo.app.network.KaraokeApi
+import org.karatomo.app.network.*
 import org.karatomo.app.ui.adapter.SongAdapter
+import retrofit2.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,6 +31,7 @@ class NewSongFragment : Fragment() {
         rv.layoutManager = LinearLayoutManager(context)
         rv.adapter = adapter
 
+        // 최근 12개월 생성 (yyyyMM 형식)
         val sdf = SimpleDateFormat("yyyyMM", Locale.getDefault())
         val cal = Calendar.getInstance()
         for (i in 0 until 12) {
@@ -67,19 +67,26 @@ class NewSongFragment : Fragment() {
         val selectedMonth = spinnerMonth.selectedItem?.toString() ?: return
         progressBar.visibility = View.VISIBLE
         
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val list = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    adapter.updateData(list)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "오류: ${e.message}", Toast.LENGTH_SHORT).show()
+        // [핵심 수정] Call 객체를 명시적으로 받고 Callback을 연결하여 타입 미스매치 방지
+        val call: Call<List<Song>> = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
+        
+        call.enqueue(object : Callback<List<Song>> {
+            override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
+                if (!isAdded) return // 프래그먼트가 유효할 때만 처리
+                progressBar.visibility = View.GONE
+                if (response.isSuccessful) {
+                    val list = response.body()
+                    adapter.updateData(list ?: emptyList())
+                } else {
+                    Toast.makeText(context, "에러: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
+
+            override fun onFailure(call: Call<List<Song>>, t: Throwable) {
+                if (!isAdded) return
+                progressBar.visibility = View.GONE
+                Toast.makeText(context, "연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

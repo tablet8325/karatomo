@@ -20,7 +20,6 @@ interface KaraokeService {
 }
 
 object KaraokeApi {
-    // [오류방지] URL 끝에 슬래시(/)가 없으면 Retrofit 빌드 시 Crash 발생
     private const val BASE_URL = "https://api.manana.kr/karaoke/"
 
     val service: KaraokeService by lazy {
