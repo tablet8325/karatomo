@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.*
-import kotlinx.coroutines.*
 import org.karatomo.app.R
-import org.karatomo.app.network.KaraokeApi
+import org.karatomo.app.network.*
 import org.karatomo.app.ui.adapter.SongAdapter
+import retrofit2.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -67,19 +66,27 @@ class NewSongFragment : Fragment() {
         val selectedMonth = spinnerMonth.selectedItem?.toString() ?: return
         progressBar.visibility = View.VISIBLE
         
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val list = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    adapter.updateData(list)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "오류: ${e.message}", Toast.LENGTH_SHORT).show()
+        // [수정] interface에 정의된 대로 Call 객체를 받아서 enqueue를 호출함
+        val call: Call<List<Song>> = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
+        
+        call.enqueue(object : Callback<List<Song>> {
+            override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
+                progressBar.visibility = View.GONE
+                if (response.isSuccessful) {
+                    val list = response.body()
+                    if (list.isNullOrEmpty()) {
+                        adapter.updateData(emptyList())
+                    } else {
+                        adapter.updateData(list)
+                    }
+                } else {
+                    Toast.makeText(context, "오류: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
+            override fun onFailure(call: Call<List<Song>>, t: Throwable) {
+                progressBar.visibility = View.GONE
+                Toast.makeText(context, "실패: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
