@@ -2,76 +2,84 @@ package org.karatomo.app.ui
 
 import android.os.Bundle
 import android.view.*
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.*
-import org.karatomo.app.R
+import org.karatomo.app.databinding.FragmentNewSongBinding
 import org.karatomo.app.network.KaraokeApi
-import org.karatomo.app.ui.adapter.SongAdapter
+import org.karatomo.app.network.SongAdapter
+import kotlinx.coroutines.*
+import java.util.*
 
 class NewSongFragment : Fragment() {
+    private var _binding: FragmentNewSongBinding? = null
+    private val binding get() = _binding!!
+    private val scope = CoroutineScope(Dispatchers.Main + Job())
+    
+    private var selectedDate = "202603"
+    private var selectedBrand = "tj"
 
-    private lateinit var adapter: SongAdapter
-    private lateinit var progressBar: ProgressBar
-    private lateinit var tvMessage: TextView
-    private var currentJob: Job? = null
-    private var selectedBrand: String = "tj"
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_new_song, container, false)
-
-        progressBar = view.findViewById(R.id.progressBar)
-        tvMessage = view.findViewById(R.id.tvMessage)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-        val etSearch = view.findViewById<EditText>(R.id.etSearch)
-        val btnSearch = view.findViewById<Button>(R.id.btnSearch)
-
-        adapter = SongAdapter(mutableListOf())
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
-
-        // 검색 버튼 클릭 시
-        btnSearch.setOnClickListener {
-            loadSongs(selectedBrand, etSearch.text.toString())
-        }
-
-        // 브랜드 버튼들
-        view.findViewById<Button>(R.id.btnTj).setOnClickListener { selectedBrand = "tj"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnKy).setOnClickListener { selectedBrand = "kumyoung"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnJoy).setOnClickListener { selectedBrand = "joysound"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnDam).setOnClickListener { selectedBrand = "dam"; loadSongs(selectedBrand) }
-
-        loadSongs(selectedBrand)
-        return view
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentNewSongBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    private fun loadSongs(brand: String, query: String? = null) {
-        currentJob?.cancel()
-        progressBar.visibility = View.VISIBLE
-        tvMessage.text = "데이터 로딩 중..."
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupDateSpinner()
+        setupBrandButtons()
+        fetchNewSongs() // 초기 실행 (202603, TJ)
+    }
 
-        currentJob = lifecycleScope.launch(Dispatchers.IO) {
+    private fun setupDateSpinner() {
+        val dates = mutableListOf<String>()
+        val cal = Calendar.getInstance().apply { set(2026, Calendar.MARCH, 1) }
+        
+        for (i in 0..11) {
+            val year = cal.get(Calendar.YEAR)
+            val month = String.format("%02d", cal.get(Calendar.MONTH) + 1)
+            dates.add("$year$month")
+            cal.add(Calendar.MONTH, -1)
+        }
+
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, dates)
+        binding.spinnerDate.adapter = adapter
+        binding.spinnerDate.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                selectedDate = dates[pos]
+                fetchNewSongs()
+            }
+            override fun onNothingSelected(p: AdapterView<*>?) {}
+        }
+    }
+
+    private fun setupBrandButtons() {
+        binding.rgBrand.setOnCheckedChangeListener { _, id ->
+            selectedBrand = when(id) {
+                org.karatomo.app.R.id.rbKy -> "kumyoung"
+                else -> "tj"
+            }
+            fetchNewSongs()
+        }
+    }
+
+    private fun fetchNewSongs() {
+        binding.progressBar.visibility = View.VISIBLE
+        scope.launch {
             try {
-                val list = KaraokeApi.service.getSongs(brand, query)
-                withContext(Dispatchers.Main) {
-                    adapter.updateData(list)
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = if (list.isEmpty()) "검색 결과가 없습니다." else ""
+                // 수정된 API 경로 호출: /karaoke/release/YYYYMM/brand.json
+                val response = KaraokeApi.service.getNewSongs(selectedDate, selectedBrand)
+                if (response.isSuccessful) {
+                    val songs = response.body() ?: emptyList()
+                    binding.rvNewSongs.layoutManager = LinearLayoutManager(context)
+                    binding.rvNewSongs.adapter = SongAdapter(requireContext(), songs)
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = "에러: ${e.localizedMessage}"
-                }
+                // 에러 발생 시 처리
+            } finally {
+                binding.progressBar.visibility = View.GONE
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        currentJob?.cancel()
     }
 }
