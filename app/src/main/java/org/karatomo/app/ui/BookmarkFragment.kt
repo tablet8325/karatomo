@@ -1,51 +1,47 @@
 package org.karatomo.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.EditText
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import org.karatomo.app.databinding.FragmentBookmarkBinding
+import androidx.recyclerview.widget.RecyclerView
+import org.karatomo.app.R
 import org.karatomo.app.managers.BookmarkManager
+// PlaylistTabAdapter의 패키지 경로를 확인하세요. (보통 .ui.adapter)
+import org.karatomo.app.ui.adapter.PlaylistTabAdapter
 
 class BookmarkFragment : Fragment() {
+    private lateinit var adapter: PlaylistTabAdapter
 
-    private var _binding: FragmentBookmarkBinding? = null
-    private val binding get() = _binding!!
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.fragment_library, container, false)
+        val rv = view.findViewById<RecyclerView>(R.id.rvPlaylistTabs)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = 
-        FragmentBookmarkBinding.inflate(inflater, container, false).also { _binding = it }.root
+        adapter = PlaylistTabAdapter(
+            onItemClick = { name ->
+                val intent = Intent(requireContext(), PlaylistDetailActivity::class.java)
+                intent.putExtra("playlistName", name)
+                startActivity(intent)
+            },
+            onAddClick = { /* 추가 다이얼로그 로직 */ }
+        )
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val adapter = PlaylistAdapter(BookmarkManager.playlists)
-        binding.rvPlaylists.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvPlaylists.adapter = adapter
-
-        binding.btnAddPlaylist.setOnClickListener {
-            val editText = EditText(requireContext())
-            AlertDialog.Builder(requireContext())
-                .setTitle("플레이리스트 이름")
-                .setView(editText)
-                .setPositiveButton("추가") { _, _ ->
-                    val name = editText.text.toString()
-                    if (BookmarkManager.createPlaylist(name)) {
-                        adapter.notifyDataSetChanged()
-                        Toast.makeText(requireContext(), "$name 생성 완료", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "이미 존재하는 이름", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .setNegativeButton("취소", null)
-                .show()
-        }
+        rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        rv.adapter = adapter
+        
+        refresh()
+        return view
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun refresh() {
+        // [수정] BookmarkManager의 public 메서드를 통해 리스트를 가져옵니다.
+        val names = BookmarkManager.getPlaylistNames()
+        adapter.submitList(names)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refresh()
     }
 }
