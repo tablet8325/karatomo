@@ -5,8 +5,7 @@ import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import kotlinx.coroutines.*
 import org.karatomo.app.R
 import org.karatomo.app.network.KaraokeApi
@@ -18,7 +17,7 @@ class NewSongFragment : Fragment() {
     private lateinit var adapter: SongAdapter
     private lateinit var progressBar: ProgressBar
     private lateinit var spinnerMonth: Spinner
-    private var currentBrand = "tj" // 기본값
+    private var currentBrand = "tj"
     private val monthList = mutableListOf<String>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -29,12 +28,10 @@ class NewSongFragment : Fragment() {
         val rv = view.findViewById<RecyclerView>(R.id.recyclerView)
         val rg = view.findViewById<RadioGroup>(R.id.rgBrand)
 
-        // 1. 리사이클러뷰 설정
-        adapter = SongAdapter(mutableListOf())
-        rv.layoutManager = LinearLayoutManager(requireContext())
+        adapter = SongAdapter(emptyList())
+        rv.layoutManager = LinearLayoutManager(context)
         rv.adapter = adapter
 
-        // 2. 최근 12개월 목록 생성 (서버 규격: yyyyMM)
         val sdf = SimpleDateFormat("yyyyMM", Locale.getDefault())
         val cal = Calendar.getInstance()
         for (i in 0 until 12) {
@@ -46,7 +43,6 @@ class NewSongFragment : Fragment() {
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerMonth.adapter = monthAdapter
 
-        // 3. 월 선택 이벤트
         spinnerMonth.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
                 loadNewSongs()
@@ -54,10 +50,9 @@ class NewSongFragment : Fragment() {
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
 
-        // 4. 브랜드 선택 이벤트 (서버 규격으로 변환)
         rg.setOnCheckedChangeListener { _, checkedId ->
             currentBrand = when(checkedId) {
-                R.id.rbKy -> "kumyoung" // 'ky'가 아니라 'kumyoung'이어야 함
+                R.id.rbKy -> "kumyoung"
                 R.id.rbJoy -> "joysound"
                 R.id.rbDam -> "dam"
                 else -> "tj"
@@ -70,28 +65,19 @@ class NewSongFragment : Fragment() {
 
     private fun loadNewSongs() {
         val selectedMonth = spinnerMonth.selectedItem?.toString() ?: return
-        val apiUrl = "https://api.manana.kr/karaoke/release.json?release=$selectedMonth&brand=$currentBrand"
-        
-        // [중요] 빌드 후 이 주소를 직접 확인해보세요.
-        android.widget.Toast.makeText(requireContext(), "URL: $apiUrl", android.widget.Toast.LENGTH_LONG).show()
-    
         progressBar.visibility = View.VISIBLE
-        viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val list = org.karatomo.app.network.KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    if (!isAdded) return@withContext
+                val list = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
+                withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    if (list.isEmpty()) {
-                        // 결과 없음 처리
-                        android.widget.Toast.makeText(requireContext(), "해당 조건의 신곡이 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
-                    }
                     adapter.updateData(list)
                 }
             } catch (e: Exception) {
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    android.widget.Toast.makeText(requireContext(), "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "오류: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
