@@ -5,7 +5,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import org.karatomo.app.R
-import org.karatomo.app.manager.BookmarkManager
+import org.karatomo.app.managers.BookmarkManager
 import org.karatomo.app.network.Song
 
 class SongAdapter(private val songs: MutableList<Song>) : RecyclerView.Adapter<SongAdapter.ViewHolder>() {
