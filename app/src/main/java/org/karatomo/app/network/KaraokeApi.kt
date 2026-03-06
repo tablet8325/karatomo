@@ -6,16 +6,6 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-data class Song(
-    val brand: String?,
-    val no: String?,
-    val title: String?,
-    val singer: String?,
-    val composer: String?,
-    val lyricist: String?,
-    val release: String?
-)
-
 interface KaraokeApiService {
     // [검색 API: Choice 2 방식]
     @GET("karaoke/song/{title}.json")
