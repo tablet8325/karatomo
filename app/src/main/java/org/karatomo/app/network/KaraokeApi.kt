@@ -7,7 +7,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface KaraokeApiService {
-    // [검색 API: Choice 2 방식]
+    // [검색 API] 기존에 쓰시던 옵션들 그대로 유지합니다!
     @GET("karaoke/song/{title}.json")
     suspend fun searchByTitle(@Path("title") title: String, @Query("brand") brand: String): List<Song>
 
@@ -23,7 +23,7 @@ interface KaraokeApiService {
     @GET("karaoke/lyricist/{lyricist}.json")
     suspend fun searchByLyricist(@Path("lyricist") lyricist: String, @Query("brand") brand: String): List<Song>
 
-    // [월별 신곡 API: Choice 2 방식]
+    // [신곡 API] 주신 예시 주소에 맞게 release 파라미터 사용
     @GET("karaoke/release.json")
     suspend fun getReleaseSongs(@Query("release") release: String, @Query("brand") brand: String): List<Song>
 }
