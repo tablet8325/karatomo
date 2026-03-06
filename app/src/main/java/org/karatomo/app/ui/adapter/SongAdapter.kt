@@ -28,9 +28,15 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
         val song = songList[position]
         holder.binding.tvTitle.text = song.title
         holder.binding.tvSinger.text = song.singer
-        holder.binding.tvNo.text = song.no ?: (song.noTj ?: song.noKy ?: "")
+        
+        // 보관함 데이터(noTj 등)가 있으면 우선 표시, 없으면 일반 검색 결과 no 표시
+        val displayNo = when {
+            !song.noTj.isNullOrEmpty() -> "TJ: ${song.noTj}"
+            !song.noKy.isNullOrEmpty() -> "KY: ${song.noKy}"
+            else -> song.no ?: ""
+        }
+        holder.binding.tvNo.text = displayNo
 
-        // 추가 버튼(별표 등) 클릭 시 지능형 추가 로직 실행
         holder.itemView.setOnClickListener {
             showAddSongDialog(song)
         }
@@ -39,25 +45,29 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
     override fun getItemCount(): Int = songList.size
 
     /**
-     * 제목에서 괄호 및 특수문자를 제거하여 순수 키워드만 추출
+     * 강화된 제목 정제 로직
+     * 1. 괄호와 그 안의 내용 전체 삭제: (드라마 OST), [Live] 등
+     * 2. 특수기호 이후 내용 삭제: - (하이픈), / (슬래시) 뒤에 오는 부제 제거
+     * 3. 양끝 공백 제거
      */
     private fun cleanTitle(title: String): String {
-        return title.replace(Regex("\\(.*?\\)"), "").trim()
+        return title
+            .replace(Regex("\\(.*?\\)"), "") // 괄호() 내용 삭제
+            .replace(Regex("\\[.*?\\]"), "") // 대괄호[] 내용 삭제
+            .split("-")[0]                   // 하이픈 뒤 삭제
+            .split("/")[0]                   // 슬래시 뒤 삭제
+            .trim()                          // 양끝 공백 제거
     }
 
-    /**
-     * 타 브랜드 번호 통합 검색 및 추가 다이얼로그
-     */
     private fun showAddSongDialog(baseSong: Song) {
         val cleanedTitle = cleanTitle(baseSong.title)
-        val dialogView = LayoutInflater.from(context).inflate(android.R.layout.select_dialog_multichoice, null)
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("보관함에 추가 (타 브랜드 검색 중...)")
-
-        // 탭 선택을 위한 목록 준비
         val playlistNames = BookmarkManager.playlists.map { it.name }.toTypedArray()
         
-        // 1. 먼저 어느 탭에 넣을지 선택
+        if (playlistNames.isEmpty()) {
+            Toast.makeText(context, "생성된 탭이 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         AlertDialog.Builder(context)
             .setTitle("추가할 탭 선택")
             .setItems(playlistNames) { _, which ->
@@ -68,13 +78,12 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
 
     private fun performIntegratedSearch(baseSong: Song, query: String, playlistIndex: Int) {
         scope.launch {
-            // Toast로 진행 상태 알림 (로그 확인 불가 대안)
-            Toast.makeText(context, "'$query'로 타 브랜드 번호를 검색합니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "'$query' 키워드로 통합 검색 중...", Toast.LENGTH_SHORT).show()
 
             val brands = listOf("tj", "kumyoung", "joysound", "dam")
             val resultsMap = mutableMapOf<String, List<Song>>()
 
-            // 모든 브랜드 병렬 검색
+            // 병렬 네트워크 통신
             val jobs = brands.map { brand ->
                 async(Dispatchers.IO) {
                     try {
@@ -89,25 +98,30 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
             }
             jobs.awaitAll()
 
-            // 검색된 결과를 바탕으로 최종 선택 다이얼로그 표시
-            showSelectionDialog(baseSong, resultsMap, playlistIndex)
+            showSelectionDialog(baseSong, resultsMap, playlistIndex, query)
         }
     }
 
-    private fun showSelectionDialog(baseSong: Song, resultsMap: Map<String, List<Song>>, playlistIndex: Int) {
+    private fun showSelectionDialog(baseSong: Song, resultsMap: Map<String, List<Song>>, playlistIndex: Int, cleanedTitle: String) {
+        // 새 통합 곡 객체 생성
         val finalSong = Song(
-            title = cleanTitle(baseSong.title),
+            title = cleanedTitle, 
             originalTitle = baseSong.title,
             singer = baseSong.singer,
+            // 기본 정보 채우기
             noTj = if (baseSong.brand == "tj") baseSong.no else null,
             noKy = if (baseSong.brand == "kumyoung") baseSong.no else null,
             noDam = if (baseSong.brand == "dam") baseSong.no else null,
             noJoy = if (baseSong.brand == "joysound") baseSong.no else null
         )
 
-        // 각 브랜드별로 가장 유사한(제목/가수 일치) 곡 자동 매칭
+        // 브랜드별 최적의 매칭 곡 찾기 (제목 포함 및 가수 일치)
         resultsMap.forEach { (brand, list) ->
-            val match = list.find { it.title.contains(finalSong.title) && it.singer == finalSong.singer }
+            val match = list.find { 
+                cleanTitle(it.title).equals(cleanedTitle, ignoreCase = true) && 
+                it.singer.replace(" ", "").equals(baseSong.singer.replace(" ", ""), ignoreCase = true)
+            }
+            
             when (brand) {
                 "tj" -> if (finalSong.noTj == null) finalSong.noTj = match?.no
                 "kumyoung" -> if (finalSong.noKy == null) finalSong.noKy = match?.no
@@ -116,14 +130,18 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
             }
         }
 
-        // 결과 확인 및 저장
-        val msg = StringBuilder().apply {
-            append("다음 번호들이 저장됩니다:\n")
-            append("TJ: ${finalSong.noTj ?: "없음"}\n")
-            append("금영: ${finalSong.noKy ?: "없음"}\n")
-            append("DAM: ${finalSong.noDam ?: "없음"}\n")
-            append("JOY: ${finalSong.noJoy ?: "없음"}")
-        }.toString()
+        val msg = """
+            제목: ${finalSong.title}
+            가수: ${finalSong.singer}
+            
+            [검색된 번호]
+            TJ: ${finalSong.noTj ?: "-----"}
+            금영: ${finalSong.noKy ?: "-----"}
+            DAM: ${finalSong.noDam ?: "-----"}
+            JOY: ${finalSong.noJoy ?: "-----"}
+            
+            이 구성으로 보관함에 저장할까요?
+        """.trimIndent()
 
         AlertDialog.Builder(context)
             .setTitle("보관함 저장 확인")
@@ -131,9 +149,9 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
             .setPositiveButton("저장") { _, _ ->
                 val success = BookmarkManager.addSongToPlaylist(context, playlistIndex, finalSong)
                 if (success) {
-                    Toast.makeText(context, "보관함에 저장되었습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "보관함에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "이미 존재하는 곡입니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "이미 해당 탭에 존재하는 곡입니다.", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("취소", null)
