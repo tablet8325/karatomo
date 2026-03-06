@@ -22,8 +22,18 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvPlaylistTabs"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPlaylistSongs"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
