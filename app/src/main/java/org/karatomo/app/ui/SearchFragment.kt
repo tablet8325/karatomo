@@ -12,38 +12,38 @@ import retrofit2.*
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
-    private var tvNoResult: TextView? = null
-    private var rvSearch: RecyclerView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // [수정] 수정된 순수 XML 레이아웃을 인플레이트함
-        val view = inflater.inflate(R.layout.fragment_search, container, false)
+        return inflater.inflate(R.layout.fragment_search, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         
-        tvNoResult = view.findViewById(R.id.tvNoResult)
-        rvSearch = view.findViewById(R.id.rvSearch)
-        
+        // XML ID와 1:1 매칭 (실종된 버튼과 에딧텍스트 복구)
+        val etSearch = view.findViewById<EditText>(R.id.etSearch)
+        val btnSearch = view.findViewById<Button>(R.id.btnSearch)
+        val rvSearch = view.findViewById<RecyclerView>(R.id.rvSearch)
+        val tvNoResult = view.findViewById<TextView>(R.id.tvNoResult)
+
         adapter = SongAdapter(emptyList())
         rvSearch?.layoutManager = LinearLayoutManager(context)
         rvSearch?.adapter = adapter
 
-        val etSearch = view.findViewById<EditText>(R.id.etSearch)
-        val btnSearch = view.findViewById<Button>(R.id.btnSearch)
-
-        btnSearch.setOnClickListener {
-            performSearch(etSearch.text.toString())
+        btnSearch?.setOnClickListener {
+            val query = etSearch?.text.toString()
+            if (query.isNotBlank()) {
+                performSearch(query, tvNoResult, rvSearch)
+            }
         }
-        return view
     }
 
-    private fun performSearch(query: String) {
-        if (query.isBlank()) return
-        
+    private fun performSearch(query: String, tvNoResult: TextView?, rvSearch: RecyclerView?) {
         KaraokeApi.service.searchSongs(query, "tj", "title").enqueue(object : Callback<List<Song>> {
             override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
                 if (!isAdded) return
                 val list = response.body()
-                
-                // 유효한 결과(곡 번호)가 있는지 체크
+                // 서버 데이터 유효성 체크 (알맹이가 있는지 확인)
                 if (list.isNullOrEmpty() || list[0].no.isNullOrBlank()) {
                     tvNoResult?.visibility = View.VISIBLE
                     rvSearch?.visibility = View.GONE
