@@ -27,8 +27,8 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
         holder.tvSinger.text = song.singer
         holder.tvNo.text = song.no
 
-        // 브랜드별 색상 적용 (TJ:주황, 금영:파랑, JOY:빨강, DAM:핫핑크)
-        val brandColor = when (song.brand.lowercase()) {
+        // onBindViewHolder 내부 색상 적용 부분
+        val brandColor = when (song.brand?.lowercase()) {
             "tj" -> "#FF5722"
             "kumyoung" -> "#2196F3"
             "joysound" -> "#F44336"
