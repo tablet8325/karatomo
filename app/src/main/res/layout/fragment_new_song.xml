@@ -9,37 +9,56 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginBottom="8dp">
-        <EditText
-            android:id="@+id/etSearch"
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="출시 월 선택:"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="검색어를 입력하세요"
-            android:singleLine="true"/>
-        <Button
-            android:id="@+id/btnSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="검색"/>
+            android:minHeight="48dp"
+            android:spinnerMode="dropdown"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+        
         <Button android:id="@+id/btnTj" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="TJ"/>
         <Button android:id="@+id/btnKy" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="KY"/>
         <Button android:id="@+id/btnJoy" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="JOY"/>
         <Button android:id="@+id/btnDam" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="DAM"/>
     </LinearLayout>
 
-    <ProgressBar android:id="@+id/progressBar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
-    <TextView android:id="@+id/tvMessage" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FF0000"/>
+    <ProgressBar 
+        android:id="@+id/progressBar" 
+        style="?android:attr/progressBarStyleHorizontal" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:visibility="gone"
+        android:indeterminate="true"/>
+
+    <TextView 
+        android:id="@+id/tvMessage" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:textColor="#FF0000"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
 </LinearLayout>
