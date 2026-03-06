@@ -1,64 +1,47 @@
 package org.karatomo.app.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.*
-import android.widget.*
-import androidx.appcompat.app.AlertDialog
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.karatomo.app.R
-import org.karatomo.app.managers.BookmarkManager
-import android.content.Intent
+import org.karatomo.app.managers.BookmarkManager // s 확인
+import org.karatomo.app.ui.adapter.PlaylistTabAdapter // 경로 확인
 
 class LibraryFragment : Fragment() {
-    private lateinit var adapter: PlaylistTabAdapter
+    private var tabAdapter: PlaylistTabAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
-        
         val rv = view.findViewById<RecyclerView>(R.id.rvPlaylistTabs)
-        adapter = PlaylistTabAdapter(
-            // 1. 클릭 시 상세화면 이동
-            onItemClick = { name ->
+
+        tabAdapter = PlaylistTabAdapter(
+            onItemClick = { playlistName: String -> // [해결] 타입을 String으로 명시하여 putExtra 에러 방지
                 val intent = Intent(requireContext(), PlaylistDetailActivity::class.java)
-                intent.putExtra("playlistName", name)
+                intent.putExtra("playlistName", playlistName)
                 startActivity(intent)
             },
-            // 2. 마지막 [+] 아이템 클릭 시 새 폴더 추가
-            onAddClick = { showAddDialog() }
+            onAddClick = { /* 추가 로직 */ }
         )
 
         rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        rv.adapter = adapter
+        rv.adapter = tabAdapter
         
         refreshData()
         return view
     }
 
     private fun refreshData() {
-        val names = BookmarkManager.getPlaylistNames().toMutableList()
-        adapter.submitList(names)
-    }
-
-    private fun showAddDialog() {
-        val et = EditText(requireContext())
-        AlertDialog.Builder(requireContext())
-            .setTitle("새 플레이리스트")
-            .setView(et)
-            .setPositiveButton("생성") { _, _ ->
-                val name = et.text.toString().trim()
-                if (name.isNotEmpty()) {
-                    BookmarkManager.createPlaylist(requireContext(), name)
-                    refreshData()
-                }
-            }
-            .setNegativeButton("취소", null)
-            .show()
+        val names = BookmarkManager.getPlaylistNames()
+        tabAdapter?.submitList(names)
     }
 
     override fun onResume() {
         super.onResume()
-        refreshData() // 곡 개수 등이 변했을 수 있으니 복귀 시 갱신
+        refreshData()
     }
 }
