@@ -29,7 +29,7 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
         holder.binding.tvTitle.text = song.title
         holder.binding.tvSinger.text = song.singer
         
-        // 보관함 데이터(noTj 등)가 있으면 우선 표시, 없으면 일반 검색 결과 no 표시
+        // 브랜드 필터에 따른 번호 표시 (기존 로직)
         val displayNo = when {
             !song.noTj.isNullOrEmpty() -> "TJ: ${song.noTj}"
             !song.noKy.isNullOrEmpty() -> "KY: ${song.noKy}"
@@ -37,9 +37,44 @@ class SongAdapter(private val context: Context, private var songList: List<Song>
         }
         holder.binding.tvNo.text = displayNo
 
+        // 단일 클릭: 보관함 추가 다이얼로그
         holder.itemView.setOnClickListener {
             showAddSongDialog(song)
         }
+
+        // 길게 누르기: 곡 상세 정보 팝업
+        holder.itemView.setOnLongClickListener {
+            showSongDetailDialog(song)
+            true
+        }
+    }
+
+    /**
+     * 곡의 상세 정보를 보여주는 팝업 (작곡, 작사, 추가일 등)
+     */
+    private fun showSongDetailDialog(song: Song) {
+        val detailMsg = """
+            [곡 정보]
+            제목: ${song.originalTitle ?: song.title}
+            가수: ${song.singer}
+            작곡: ${song.composer.ifEmpty { "정보 없음" }}
+            작사: ${song.lyricist.ifEmpty { "정보 없음" }}
+            
+            [보관함 정보]
+            추가일: ${song.addedDate.ifEmpty { "기록 없음" }}
+            
+            [브랜드별 번호]
+            TJ: ${song.noTj ?: "-"}
+            KY: ${song.noKy ?: "-"}
+            JOY: ${song.noJoy ?: "-"}
+            DAM: ${song.noDam ?: "-"}
+        """.trimIndent()
+
+        AlertDialog.Builder(context)
+            .setTitle("상세 정보")
+            .setMessage(detailMsg)
+            .setPositiveButton("확인", null)
+            .show()
     }
 
     override fun getItemCount(): Int = songList.size
