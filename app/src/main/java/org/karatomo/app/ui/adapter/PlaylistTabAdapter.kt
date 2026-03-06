@@ -3,7 +3,6 @@ package org.karatomo.app.ui.adapter
 import android.view.*
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.karatomo.app.R
 import org.karatomo.app.managers.BookmarkManager
 
 class PlaylistTabAdapter(
@@ -22,7 +21,7 @@ class PlaylistTabAdapter(
         val name = names[position]
         (holder.itemView as TextView).apply {
             text = name
-            setPadding(40, 0, 40, 0)
+            setPadding(40, 20, 40, 20)
             gravity = Gravity.CENTER
             setOnClickListener { onItemClick(name) }
         }
@@ -30,9 +29,10 @@ class PlaylistTabAdapter(
 
     override fun getItemCount() = names.size
 
-    override fun notifyDataSetChanged() {
+    // [에러 해결] 이름을 바꿨습니다.
+    fun refreshData() {
         names = BookmarkManager.getPlaylistNames()
-        super.notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 
     class VH(v: View) : RecyclerView.ViewHolder(v)

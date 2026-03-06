@@ -38,6 +38,13 @@ object BookmarkManager {
         return true
     }
 
+    // [에러 해결] 누락된 함수 추가
+    fun deletePlaylist(context: Context, name: String) {
+        playlists.remove(name)
+        if (playlists.isEmpty()) playlists["기본 플레이리스트"] = mutableListOf()
+        saveData(context)
+    }
+
     fun getSongs(name: String): List<Song> = playlists[name] ?: emptyList()
     fun getPlaylistNames(): List<String> = playlists.keys.toList()
 
