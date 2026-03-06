@@ -20,7 +20,6 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackground"
-            android:contentDescription="보관함 설정"
             android:src="@android:drawable/ic_menu_preferences"
             app:tint="@color/black" />
 
@@ -29,18 +28,91 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             app:tabMode="scrollable"
-            app:tabGravity="fill"
             app:tabIndicatorColor="@color/black"
             app:tabSelectedTextColor="@color/black"
             app:tabTextColor="#888888" />
     </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/brandSelectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#FFFFFF"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/tabArea">
+
+        <RadioGroup
+            android:id="@+id/rgBrandFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <RadioButton
+                android:id="@+id/rbAll"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="전체"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/rbTj"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:checked="true"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="TJ" />
+
+            <RadioButton
+                android:id="@+id/rbKy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="금영" />
+
+            <RadioButton
+                android:id="@+id/rbJoy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Joysound" />
+
+            <RadioButton
+                android:id="@+id/rbDam"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="DAM" />
+        </RadioGroup>
+    </HorizontalScrollView>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/bookmarkViewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/bottomControlBar"
-        app:layout_constraintTop_toBottomOf="@id/tabArea" />
+        app:layout_constraintTop_toBottomOf="@id/brandSelectionBar" />
 
     <LinearLayout
         android:id="@+id/bottomControlBar"
@@ -48,7 +120,6 @@
         android:layout_height="56dp"
         android:orientation="horizontal"
         android:background="#F1F3F5"
-        android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Spinner
@@ -56,10 +127,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:paddingStart="12dp"
-            android:entries="@array/sort_options"
-            android:spinnerMode="dropdown" />
+            android:paddingStart="12dp" />
 
         <View
             android:layout_width="1dp"
@@ -73,9 +141,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
             android:text="순서 바꾸기"
-            android:textColor="@color/black"
             android:textStyle="bold" />
     </LinearLayout>
 
