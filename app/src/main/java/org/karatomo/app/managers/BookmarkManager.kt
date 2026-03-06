@@ -9,15 +9,15 @@ object BookmarkManager {
     private const val PREF_NAME = "BookmarkPrefs"
     private const val KEY_PLAYLISTS = "Playlists"
     
-    private var playlists: MutableMap<String, MutableList<Song>> = mutableMapOf()
+    // 순서 유지를 위해 LinkedHashMap 사용
+    private var playlists: MutableMap<String, MutableList<Song>> = LinkedHashMap()
 
-    // 1. MainActivity에서 부르는 초기화 함수
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val json = prefs.getString(KEY_PLAYLISTS, null)
         if (json != null) {
-            val type = object : TypeToken<MutableMap<String, MutableList<Song>>>() {}.type
-            playlists = Gson().fromJson(json, type) ?: mutableMapOf()
+            val type = object : TypeToken<LinkedHashMap<String, MutableList<Song>>>() {}.type
+            playlists = Gson().fromJson(json, type) ?: LinkedHashMap()
         }
         if (playlists.isEmpty()) {
             playlists["기본 플레이리스트"] = mutableListOf()
@@ -25,12 +25,32 @@ object BookmarkManager {
         }
     }
 
-    // 2. PlaylistDetailActivity에서 부르는 순서 변경 함수
-    fun moveSong(context: Context, playlistName: String, fromPos: Int, toPos: Int) {
-        val playlist = playlists[playlistName] ?: return
-        if (fromPos in playlist.indices && toPos in playlist.indices) {
-            val movedItem = playlist.removeAt(fromPos)
-            playlist.add(toPos, movedItem)
+    // 이름 편집
+    fun renamePlaylist(context: Context, oldName: String, newName: String): Boolean {
+        if (playlists.containsKey(newName) || oldName == newName) return false
+        val songs = playlists.remove(oldName) ?: return false
+        playlists[newName] = songs
+        saveData(context)
+        return true
+    }
+
+    // 삭제
+    fun deletePlaylist(context: Context, name: String) {
+        playlists.remove(name)
+        if (playlists.isEmpty()) playlists["기본 플레이리스트"] = mutableListOf()
+        saveData(context)
+    }
+
+    // 탭 순서 변경
+    fun movePlaylist(context: Context, fromPos: Int, toPos: Int) {
+        val keys = playlists.keys.toMutableList()
+        if (fromPos in keys.indices && toPos in keys.indices) {
+            val movedKey = keys.removeAt(fromPos)
+            keys.add(toPos, movedKey)
+            
+            val newMap = LinkedHashMap<String, MutableList<Song>>()
+            keys.forEach { key -> newMap[key] = playlists[key]!! }
+            playlists = newMap
             saveData(context)
         }
     }
@@ -38,7 +58,6 @@ object BookmarkManager {
     fun addSong(context: Context, playlistName: String, song: Song): Boolean {
         val playlist = playlists[playlistName] ?: return false
         if (playlist.any { it.no == song.no && it.brand == song.brand }) return false 
-
         playlist.add(song)
         saveData(context)
         return true
@@ -51,8 +70,22 @@ object BookmarkManager {
         }
     }
 
-    fun getPlaylistNames(): List<String> = playlists.keys.toList()
     fun getSongs(name: String): List<Song> = playlists[name] ?: emptyList()
+    fun getPlaylistNames(): List<String> = playlists.keys.toList()
+
+    fun moveSong(context: Context, playlistName: String, fromPos: Int, toPos: Int) {
+        val playlist = playlists[playlistName] ?: return
+        if (fromPos in playlist.indices && toPos in playlist.indices) {
+            val movedItem = playlist.removeAt(fromPos)
+            playlist.add(toPos, movedItem)
+            saveData(context)
+        }
+    }
+
+    fun removeSong(context: Context, playlistName: String, song: Song) {
+        playlists[playlistName]?.remove(song)
+        saveData(context)
+    }
 
     fun removeSong(context: Context, playlistName: String, song: Song) {
         playlists[playlistName]?.remove(song)

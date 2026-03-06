@@ -1,5 +1,6 @@
 package org.karatomo.app.ui.adapter
 
+import android.graphics.Color
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -16,7 +17,6 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        // [주의] 레이아웃 파일명이 item_song인지 확인하세요!
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_song, parent, false)
         return ViewHolder(view)
     }
@@ -27,31 +27,37 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
         holder.tvSinger.text = song.singer
         holder.tvNo.text = song.no
 
+        // 브랜드별 색상 적용 (TJ:주황, 금영:파랑, JOY:빨강, DAM:핫핑크)
+        val brandColor = when (song.brand.lowercase()) {
+            "tj" -> "#FF5722"
+            "kumyoung" -> "#2196F3"
+            "joysound" -> "#F44336"
+            "dam" -> "#FF4081"
+            else -> "#FFFFFF"
+        }
+        holder.tvNo.setTextColor(Color.parseColor(brandColor))
+
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
-            // Context를 전달하여 안전하게 목록을 가져옵니다.
-            val playlists = BookmarkManager.getPlaylistNames() 
+            val playlists = BookmarkManager.getPlaylistNames()
             val items = playlists.toTypedArray<CharSequence>()
 
             AlertDialog.Builder(context)
                 .setTitle("플레이리스트 선택")
                 .setItems(items) { _, which ->
                     val selectedName = playlists[which]
-                    val success = BookmarkManager.addSong(context, selectedName, song)
-                    if (success) {
+                    if (BookmarkManager.addSong(context, selectedName, song)) {
                         Toast.makeText(context, "추가되었습니다.", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "이미 추가된 곡입니다.", Toast.LENGTH_SHORT).show()
                     }
-                }
-                .show()
+                }.show()
         }
     }
 
     override fun getItemCount(): Int = songs.size
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        // XML ID와 100% 일치해야 튕기지 않습니다.
         val tvTitle: TextView = view.findViewById(R.id.tvSongTitle)
         val tvSinger: TextView = view.findViewById(R.id.tvSongSinger)
         val tvNo: TextView = view.findViewById(R.id.tvSongNo)
