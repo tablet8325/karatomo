@@ -2,29 +2,31 @@ package org.karatomo.app.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.karatomo.app.R
 import org.karatomo.app.managers.BookmarkManager
-// PlaylistTabAdapter의 패키지 경로를 확인하세요. (보통 .ui.adapter)
 import org.karatomo.app.ui.adapter.PlaylistTabAdapter
 
 class BookmarkFragment : Fragment() {
-    private lateinit var adapter: PlaylistTabAdapter
+    private var adapter: PlaylistTabAdapter? = null // 변수 선언 방식 수정
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // R.layout.fragment_library 가 실제 파일명과 일치하는지 확인하세요
         val view = inflater.inflate(R.layout.fragment_library, container, false)
         val rv = view.findViewById<RecyclerView>(R.id.rvPlaylistTabs)
 
         adapter = PlaylistTabAdapter(
-            onItemClick = { name ->
+            onItemClick = { name: String -> // 타입을 명시하여 putExtra 에러 방지
                 val intent = Intent(requireContext(), PlaylistDetailActivity::class.java)
                 intent.putExtra("playlistName", name)
                 startActivity(intent)
             },
-            onAddClick = { /* 추가 다이얼로그 로직 */ }
+            onAddClick = { /* 추가 로직 */ }
         )
 
         rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -35,9 +37,8 @@ class BookmarkFragment : Fragment() {
     }
 
     private fun refresh() {
-        // [수정] BookmarkManager의 public 메서드를 통해 리스트를 가져옵니다.
         val names = BookmarkManager.getPlaylistNames()
-        adapter.submitList(names)
+        adapter?.submitList(names)
     }
 
     override fun onResume() {
