@@ -25,8 +25,8 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="#F9F9F9"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:orientation="horizontal" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tlLibraryBrand"
@@ -56,32 +56,32 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:orientation="vertical">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabRename"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:fabSize="mini"
-            app:srcCompat="@android:drawable/ic_menu_edit"
+            android:text="이름변경"
+            android:textColor="#FFFFFF"
             app:backgroundTint="#FFB300" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabEditOrder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:fabSize="mini"
-            app:srcCompat="@android:drawable/ic_menu_sort_by_size"
+            android:text="순서편집"
+            android:textColor="#FFFFFF"
             app:backgroundTint="#2196F3" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabAddPlaylist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/ic_input_add"
+            android:text="추가"
+            android:textColor="#FFFFFF"
             app:backgroundTint="#4CAF50" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
