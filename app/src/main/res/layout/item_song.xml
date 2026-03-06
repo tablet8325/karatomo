@@ -4,17 +4,16 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:gravity="center_vertical">
+    android:background="#121212">
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
-        <TextView android:id="@+id/tvTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:textStyle="bold" android:textColor="#000000"/>
-        <TextView android:id="@+id/tvSinger" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp"/>
-        <TextView android:id="@+id/tvNo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#666666"/>
+        <TextView android:id="@+id/tvSongTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+        <TextView android:id="@+id/tvSongSinger" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#BBBBBB" android:textSize="14sp" />
     </LinearLayout>
 
-    <Button android:id="@+id/btnBookmark" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="★"/>
+    <TextView android:id="@+id/tvSongNo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FF4081" android:textSize="18sp" android:textStyle="bold" />
 </LinearLayout>
