@@ -12,14 +12,13 @@ import retrofit2.*
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
-    // Unresolved reference 에러를 막기 위해 명시적으로 변수 선언
     private var tvNoResult: TextView? = null
     private var rvSearch: RecyclerView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         
-        // [수정] XML ID가 다른 경우를 대비해 null safe하게 findViewById 처리
+        // XML ID와 매칭 확인 완료
         tvNoResult = view.findViewById(R.id.tvNoResult)
         rvSearch = view.findViewById(R.id.rvSearch)
         
@@ -39,7 +38,9 @@ class SearchFragment : Fragment() {
         
         KaraokeApi.service.searchSongs(query, "tj", "title").enqueue(object : Callback<List<Song>> {
             override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
+                if (!isAdded) return
                 val list = response.body()
+                // 리스트가 실제 곡 정보를 담고 있는지 검증 (no 필드 체크)
                 if (list.isNullOrEmpty() || list[0].no.isNullOrBlank()) {
                     tvNoResult?.visibility = View.VISIBLE
                     rvSearch?.visibility = View.GONE
@@ -50,6 +51,7 @@ class SearchFragment : Fragment() {
                 }
             }
             override fun onFailure(call: Call<List<Song>>, t: Throwable) {
+                if (!isAdded) return
                 Toast.makeText(context, "네트워크 오류", Toast.LENGTH_SHORT).show()
             }
         })
