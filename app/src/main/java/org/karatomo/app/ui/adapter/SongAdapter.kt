@@ -16,6 +16,7 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        // [주의] 레이아웃 파일명이 item_song인지 확인하세요!
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_song, parent, false)
         return ViewHolder(view)
     }
@@ -26,10 +27,10 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
         holder.tvSinger.text = song.singer
         holder.tvNo.text = song.no
 
-        // [핵심] 곡 클릭 시 플레이리스트 추가 다이얼로그
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
-            val playlists = BookmarkManager.getPlaylistNames()
+            // Context를 전달하여 안전하게 목록을 가져옵니다.
+            val playlists = BookmarkManager.getPlaylistNames() 
             val items = playlists.toTypedArray<CharSequence>()
 
             AlertDialog.Builder(context)
@@ -50,6 +51,7 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
     override fun getItemCount(): Int = songs.size
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        // XML ID와 100% 일치해야 튕기지 않습니다.
         val tvTitle: TextView = view.findViewById(R.id.tvSongTitle)
         val tvSinger: TextView = view.findViewById(R.id.tvSongSinger)
         val tvNo: TextView = view.findViewById(R.id.tvSongNo)

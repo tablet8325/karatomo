@@ -3,36 +3,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@android:color/black">
 
-    <Spinner
-        android:id="@+id/spinnerMonth"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" />
+        android:text="이달의 신곡"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <RadioGroup
-        android:id="@+id/rgBrandNew"
+        android:id="@+id/rgBrand"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="8dp">
-        <RadioButton android:id="@+id/rbTjNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TJ" android:checked="true"/>
-        <RadioButton android:id="@+id/rbKyNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KY"/>
-        <RadioButton android:id="@+id/rbJoyNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="JOY"/>
-        <RadioButton android:id="@+id/rbDamNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DAM"/>
+        android:layout_marginTop="8dp">
+        <RadioButton android:id="@+id/rbTj" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TJ" android:textColor="@android:color/white" android:checked="true"/>
+        <RadioButton android:id="@+id/rbKy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KY" android:textColor="@android:color/white"/>
+        <RadioButton android:id="@+id/rbJoy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="JOY" android:textColor="@android:color/white"/>
+        <RadioButton android:id="@+id/rbDam" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DAM" android:textColor="@android:color/white"/>
     </RadioGroup>
 
     <ProgressBar
         android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp" />
 </LinearLayout>
