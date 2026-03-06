@@ -1,21 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".fragments.BookmarkFragment">
+
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/tabArea"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#F8F9FA"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/btnAddPlaylist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="플레이리스트 추가"/>
+        <ImageButton
+            android:id="@+id/btnTabSettings"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:src="@android:drawable/ic_menu_preferences"
+            app:tint="@color/black" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvPlaylists"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/playlistTabLayout"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_height="48dp"
+            app:tabMode="scrollable"
+            app:tabIndicatorColor="@color/black"
+            app:tabSelectedTextColor="@color/black"
+            app:tabTextColor="#888888" />
     </LinearLayout>
-</layout>
+
+    <HorizontalScrollView
+        android:id="@+id/brandSelectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#FFFFFF"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/tabArea">
+
+        <RadioGroup
+            android:id="@+id/rgBrandFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <RadioButton
+                android:id="@+id/rbAll"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="전체"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/rbTj"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:checked="true"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="TJ" />
+
+            <RadioButton
+                android:id="@+id/rbKy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="금영" />
+
+            <RadioButton
+                android:id="@+id/rbJoy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Joysound" />
+
+            <RadioButton
+                android:id="@+id/rbDam"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:button="@null"
+                android:background="@drawable/selector_brand_chip"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="DAM" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/bookmarkViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomControlBar"
+        app:layout_constraintTop_toBottomOf="@id/brandSelectionBar" />
+
+    <LinearLayout
+        android:id="@+id/bottomControlBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:background="#F1F3F5"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Spinner
+            android:id="@+id/spinnerSort"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingStart="12dp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="#DEE2E6" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnEditOrder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="순서 바꾸기"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
