@@ -12,17 +12,20 @@ import retrofit2.*
 
 class SearchFragment : Fragment() {
     private lateinit var adapter: SongAdapter
-    private lateinit var tvNoResult: TextView
-    private lateinit var rvSearch: RecyclerView
+    // Unresolved reference 에러를 막기 위해 명시적으로 변수 선언
+    private var tvNoResult: TextView? = null
+    private var rvSearch: RecyclerView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
+        
+        // [수정] XML ID가 다른 경우를 대비해 null safe하게 findViewById 처리
         tvNoResult = view.findViewById(R.id.tvNoResult)
         rvSearch = view.findViewById(R.id.rvSearch)
         
         adapter = SongAdapter(emptyList())
-        rvSearch.layoutManager = LinearLayoutManager(context)
-        rvSearch.adapter = adapter
+        rvSearch?.layoutManager = LinearLayoutManager(context)
+        rvSearch?.adapter = adapter
 
         val etSearch = view.findViewById<EditText>(R.id.etSearch)
         view.findViewById<Button>(R.id.btnSearch).setOnClickListener {
@@ -37,13 +40,12 @@ class SearchFragment : Fragment() {
         KaraokeApi.service.searchSongs(query, "tj", "title").enqueue(object : Callback<List<Song>> {
             override fun onResponse(call: Call<List<Song>>, response: Response<List<Song>>) {
                 val list = response.body()
-                // 리스트가 실제 곡 정보를 담고 있는지 체크 (no 필드 검증)
                 if (list.isNullOrEmpty() || list[0].no.isNullOrBlank()) {
-                    tvNoResult.visibility = View.VISIBLE
-                    rvSearch.visibility = View.GONE
+                    tvNoResult?.visibility = View.VISIBLE
+                    rvSearch?.visibility = View.GONE
                 } else {
-                    tvNoResult.visibility = View.GONE
-                    rvSearch.visibility = View.VISIBLE
+                    tvNoResult?.visibility = View.GONE
+                    rvSearch?.visibility = View.VISIBLE
                     adapter.updateData(list)
                 }
             }
