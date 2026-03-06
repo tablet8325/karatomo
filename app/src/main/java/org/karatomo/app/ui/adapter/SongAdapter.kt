@@ -8,19 +8,15 @@ import org.karatomo.app.network.Song
 
 class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdapter.VH>() {
 
+    // 데이터를 갱신하는 기본 함수
     fun updateData(newSongs: List<Song>) {
         this.songs = newSongs
         notifyDataSetChanged()
     }
 
-    // [에러 해결] submitList 대신 사용하거나 추가
-    fun submitList(newSongs: List<Song>) = updateData(newSongs)
-
-    // [에러 해결] addSong 누락 수정
-    fun addSong(song: Song) {
-        val newList = songs.toMutableList()
-        newList.add(song)
-        updateData(newList)
+    // [에러 해결] BookmarkFragment에서 찾는 함수명 추가
+    fun submitList(newSongs: List<Song>) {
+        updateData(newSongs)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -30,9 +26,9 @@ class SongAdapter(private var songs: List<Song>) : RecyclerView.Adapter<SongAdap
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val song = songs[position]
-        holder.tvTitle.text = song.title
-        holder.tvSinger.text = song.singer
-        holder.tvNo.text = song.no
+        holder.tvTitle.text = song.title ?: "알 수 없는 제목"
+        holder.tvSinger.text = song.singer ?: "알 수 없는 가수"
+        holder.tvNo.text = song.no ?: "-"
     }
 
     override fun getItemCount() = songs.size
