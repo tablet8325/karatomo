@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Karatomo</string>
+    <string-array name="search_categories">
+        <item>제목</item>
+        <item>가수</item>
+        <item>곡 번호</item>
+        <item>작곡가</item>
+        <item>작사가</item>
+    </string-array>
+</resources>

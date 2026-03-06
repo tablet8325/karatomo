@@ -1,85 +1,78 @@
-package org.karatomo.app.manager
+package org.karatomo.app.managers
 
 import android.content.Context
-import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.karatomo.app.model.Playlist
 import org.karatomo.app.network.Song
-import java.io.File
 
 object BookmarkManager {
-    val allSongs = mutableListOf<Song>()
-    val playlists = mutableListOf<Playlist>()
-    private const val FILE_NAME = "bookmark_backup.json"
+    private const val PREF_NAME = "BookmarkPrefs"
+    private const val KEY_PLAYLISTS = "Playlists"
+    
+    // 플레이리스트 데이터를 담는 맵 (이름 : 곡 목록)
+    private var playlists = mutableMapOf<String, MutableList<Song>>()
 
-    fun addSong(song: Song) {
-        if (!allSongs.any { it.no == song.no && it.brand == song.brand }) {
-            allSongs.add(song)
+    fun init(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val json = prefs.getString(KEY_PLAYLISTS, null)
+        
+        // 1. 저장된 데이터 불러오기
+        if (json != null) {
+            val type = object : TypeToken<MutableMap<String, MutableList<Song>>>() {}.type
+            playlists = Gson().fromJson(json, type) ?: mutableMapOf()
+        }
+
+        // 2. [오류 방지] 데이터가 없으면 "기본 플레이리스트" 생성
+        if (playlists.isEmpty()) {
+            playlists["기본 플레이리스트"] = mutableListOf()
+            saveData(context)
         }
     }
 
-    fun createPlaylist(name: String): Boolean {
-        if (playlists.any { it.name == name }) return false
-        playlists.add(Playlist(name))
+    // 곡 추가 (브랜드+번호 중복 방지 로직 포함)
+    fun addSong(context: Context, playlistName: String, song: Song): Boolean {
+        val playlist = playlists[playlistName] ?: return false
+        
+        // 같은 곡이 이미 있는지 확인
+        val isDuplicate = playlist.any { it.no == song.no && it.brand == song.brand }
+        if (isDuplicate) return false 
+
+        playlist.add(song)
+        saveData(context)
         return true
     }
 
-    fun deletePlaylist(name: String) {
-        playlists.removeAll { it.name == name }
-    }
-
-    fun addSongToPlaylist(song: Song, playlistName: String) {
-        playlists.find { it.name == playlistName }?.let { playlist ->
-            if (!playlist.songs.any { it.no == song.no && it.brand == song.brand }) {
-                playlist.songs.add(song)
-            }
+    // 플레이리스트 자체 추가
+    fun createPlaylist(context: Context, name: String) {
+        if (!playlists.containsKey(name)) {
+            playlists[name] = mutableListOf()
+            saveData(context)
         }
     }
 
-    fun removeSongFromPlaylist(song: Song, playlistName: String) {
-        playlists.find { it.name == playlistName }?.let { playlist ->
-            playlist.songs.removeAll { it.no == song.no && it.brand == song.brand }
+    // 상세 화면용: 곡 목록 및 이름 가져오기
+    fun getSongs(name: String): List<Song> = playlists[name] ?: emptyList()
+    fun getPlaylistNames(): List<String> = playlists.keys.toList()
+
+    // 곡 삭제
+    fun removeSong(context: Context, playlistName: String, song: Song) {
+        playlists[playlistName]?.remove(song)
+        saveData(context)
+    }
+
+    // 곡 순서 변경 (Drag & Drop 반영용)
+    fun moveSong(context: Context, playlistName: String, fromPos: Int, toPos: Int) {
+        val playlist = playlists[playlistName] ?: return
+        if (fromPos < playlist.size && toPos < playlist.size) {
+            val movedItem = playlist.removeAt(fromPos)
+            playlist.add(toPos, movedItem)
+            saveData(context)
         }
     }
 
-    fun exportToJson(context: Context) {
-        try {
-            val gson = Gson()
-            val data = mapOf("version" to 1.0, "songs" to allSongs, "playlists" to playlists)
-            val json = gson.toJson(data)
-            File(context.filesDir, FILE_NAME).writeText(json)
-            Toast.makeText(context, "북마크 JSON 내보내기 완료", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(context, "내보내기 실패", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun importFromJson(context: Context) {
-        try {
-            val file = File(context.filesDir, FILE_NAME)
-            if (!file.exists()) return
-
-            val gson = Gson()
-            val json = file.readText()
-            val mapType = object : TypeToken<Map<String, Any>>() {}.type
-            val map: Map<String, Any> = gson.fromJson(json, mapType)
-
-            val version = map["version"] as? Double ?: 1.0
-
-            val songsJson = gson.toJson(map["songs"])
-            allSongs.clear()
-            allSongs.addAll(gson.fromJson(songsJson, object : TypeToken<List<Song>>() {}.type))
-
-            val playlistsJson = gson.toJson(map["playlists"])
-            playlists.clear()
-            playlists.addAll(gson.fromJson(playlistsJson, object : TypeToken<List<Playlist>>() {}.type))
-
-            Toast.makeText(context, "북마크 JSON 가져오기 완료 (버전 $version)", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(context, "가져오기 실패: JSON 구조 확인 필요", Toast.LENGTH_SHORT).show()
-        }
+    private fun saveData(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val json = Gson().toJson(playlists)
+        prefs.edit().putString(KEY_PLAYLISTS, json).apply()
     }
 }

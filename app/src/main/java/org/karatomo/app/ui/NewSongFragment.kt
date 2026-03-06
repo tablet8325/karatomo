@@ -11,67 +11,80 @@ import kotlinx.coroutines.*
 import org.karatomo.app.R
 import org.karatomo.app.network.KaraokeApi
 import org.karatomo.app.ui.adapter.SongAdapter
+import java.text.SimpleDateFormat
+import java.util.*
 
 class NewSongFragment : Fragment() {
-
     private lateinit var adapter: SongAdapter
+    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
-    private lateinit var tvMessage: TextView
-    private var currentJob: Job? = null
-    private var selectedBrand: String = "tj"
+    private val apiMonths = mutableListOf<String>()
+    private val displayMonths = mutableListOf<String>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_new_song, container, false)
-
         progressBar = view.findViewById(R.id.progressBar)
-        tvMessage = view.findViewById(R.id.tvMessage)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-        val etSearch = view.findViewById<EditText>(R.id.etSearch)
-        val btnSearch = view.findViewById<Button>(R.id.btnSearch)
+        recyclerView = view.findViewById(R.id.recyclerView)
+        val rgBrand = view.findViewById<RadioGroup>(R.id.rgBrandNew)
+        val spinnerMonth = view.findViewById<Spinner>(R.id.spinnerMonth)
+
+        // 최근 12개월 생성
+        setupMonths()
+        spinnerMonth.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, displayMonths)
 
         adapter = SongAdapter(mutableListOf())
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-        // 검색 버튼 클릭 시
-        btnSearch.setOnClickListener {
-            loadSongs(selectedBrand, etSearch.text.toString())
+        // 리스너: 변경 시 자동 로드
+        val listener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
+                fetch(rgBrand, spinnerMonth)
+            }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
+        spinnerMonth.onItemSelectedListener = listener
+        rgBrand.setOnCheckedChangeListener { _, _ -> fetch(rgBrand, spinnerMonth) }
 
-        // 브랜드 버튼들
-        view.findViewById<Button>(R.id.btnTj).setOnClickListener { selectedBrand = "tj"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnKy).setOnClickListener { selectedBrand = "kumyoung"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnJoy).setOnClickListener { selectedBrand = "joysound"; loadSongs(selectedBrand) }
-        view.findViewById<Button>(R.id.btnDam).setOnClickListener { selectedBrand = "dam"; loadSongs(selectedBrand) }
-
-        loadSongs(selectedBrand)
         return view
     }
 
-    private fun loadSongs(brand: String, query: String? = null) {
-        currentJob?.cancel()
-        progressBar.visibility = View.VISIBLE
-        tvMessage.text = "데이터 로딩 중..."
-
-        currentJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val list = KaraokeApi.service.getSongs(brand, query)
-                withContext(Dispatchers.Main) {
-                    adapter.updateData(list)
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = if (list.isEmpty()) "검색 결과가 없습니다." else ""
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    tvMessage.text = "에러: ${e.localizedMessage}"
-                }
-            }
+    private fun setupMonths() {
+        val cal = Calendar.getInstance()
+        val apiFmt = SimpleDateFormat("yyyyMM", Locale.KOREA)
+        val dispFmt = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
+        for (i in 0 until 12) {
+            apiMonths.add(apiFmt.format(cal.time))
+            displayMonths.add(dispFmt.format(cal.time))
+            cal.add(Calendar.MONTH, -1)
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        currentJob?.cancel()
+    private fun fetch(rg: RadioGroup, sp: Spinner) {
+        val brand = when(rg.checkedRadioButtonId) {
+            R.id.rbKyNew -> "kumyoung"
+            R.id.rbJoyNew -> "joysound"
+            R.id.rbDamNew -> "dam"
+            else -> "tj"
+        }
+        val month = apiMonths[sp.selectedItemPosition]
+        load(month, brand)
+    }
+
+    private fun load(month: String, brand: String) {
+        progressBar.visibility = View.VISIBLE
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val list = KaraokeApi.service.getReleaseSongs(month, brand)
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    adapter.updateData(list)
+                    // [핵심] 리스트 최상단으로 자동 스크롤
+                    recyclerView.scrollToPosition(0)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { progressBar.visibility = View.GONE }
+            }
+        }
     }
 }
