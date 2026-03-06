@@ -55,21 +55,21 @@ class PlaylistDetailActivity : AppCompatActivity() {
             }.show()
     }
 
-    private fun showFilterDialog() {
-        val brands = arrayOf("전체", "TJ", "금영", "Joysound", "DAM")
-        AlertDialog.Builder(this).setTitle("브랜드 선택").setItems(brands) { _, which ->
-            val filter = when(which) {
-                1 -> "tj"
-                2 -> "kumyoung"
-                3 -> "joysound"
-                4 -> "dam"
-                else -> "all"
-            }
-            val filtered = if (filter == "all") BookmarkManager.getSongs(playlistName)
-            else BookmarkManager.getSongs(playlistName).filter { it.brand.lowercase() == filter }
-            adapter.updateData(filtered)
-        }.show()
-    }
+private fun showFilterDialog() {
+    val brands = arrayOf("전체", "TJ", "금영", "Joysound", "DAM")
+    AlertDialog.Builder(this).setTitle("브랜드 선택").setItems(brands) { _, which ->
+        val filter = when(which) {
+            1 -> "tj"
+            2 -> "kumyoung"
+            3 -> "joysound"
+            4 -> "dam"
+            else -> "all"
+        }
+        val filtered = if (filter == "all") BookmarkManager.getSongs(playlistName)
+        else BookmarkManager.getSongs(playlistName).filter { it.brand?.lowercase() == filter }
+        adapter.updateData(filtered)
+    }.show()
+}
 
     private fun showDeleteDialog() {
         AlertDialog.Builder(this).setTitle("삭제").setMessage("이 플레이리스트를 삭제할까요?")
