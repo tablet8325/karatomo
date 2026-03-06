@@ -40,20 +40,18 @@ class NewSongFragment : Fragment() {
             loadNewSongs()
         }
 
-        loadNewSongs() // 초기 로딩
+        loadNewSongs() 
         return view
     }
 
     private fun loadNewSongs() {
         progressBar.visibility = View.VISIBLE
         
-        // 현재 날짜 기준 YYYYMM 형식 생성 (예: 202603)
         val releaseDate = SimpleDateFormat("yyyyMM", Locale.getDefault()).format(Date())
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // API 호출: release 파라미터 적용
-                val list = KaraokeApi.service.getNewSongs(releaseDate, currentBrand)
+                val list = KaraokeApi.service.getReleaseSongs(releaseDate, currentBrand)
                 
                 withContext(Dispatchers.Main) {
                     if (!isAdded) return@withContext
@@ -64,7 +62,7 @@ class NewSongFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "신곡 로딩 실패", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "신곡 데이터를 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
