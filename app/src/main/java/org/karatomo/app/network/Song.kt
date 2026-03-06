@@ -11,3 +11,9 @@ data class Song(
     @SerializedName("lyricist") val lyricist: String? = null,
     @SerializedName("release") val release: String? = null
 )
+
+data class MergedSong(
+    val title: String,
+    val singer: String,
+    val brandNumbers: MutableMap<String, String> = mutableMapOf() // 예: "tj" to "52658", "kumyoung" to "29745"
+)
