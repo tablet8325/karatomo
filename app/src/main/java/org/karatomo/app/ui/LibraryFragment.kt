@@ -25,7 +25,7 @@ class LibraryFragment : Fragment() {
         tabAdapter = PlaylistTabAdapter(
             onItemClick = { name ->
                 val intent = Intent(requireContext(), PlaylistDetailActivity::class.java)
-                intent.putExtra("playlistName", name)
+                intent.putExtra("playlist_name", name)
                 startActivity(intent)
             },
             onAddClick = { showCreateDialog() }
