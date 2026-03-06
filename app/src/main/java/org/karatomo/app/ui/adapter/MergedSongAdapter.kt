@@ -26,8 +26,14 @@ class MergedSongAdapter(private var items: List<MergedSong>, private var filter:
         
         val sb = StringBuilder()
         if (filter == "전체") {
-            // 전체 보기일 때 번호 나열
-            item.brandNumbers.forEach { (_, no) -> sb.append("$no\n") }
+            item.brandNumbers.forEach { (brand, no) -> 
+                val bName = when(brand) {
+                    "kumyoung" -> "KY"
+                    "joysound" -> "JOY"
+                    else -> brand.uppercase()
+                }
+                sb.append("$bName: $no  ") 
+            }
         } else {
             val key = when(filter) {
                 "금영" -> "kumyoung"
