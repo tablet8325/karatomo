@@ -19,25 +19,30 @@ class BookmarkFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // [수정] Data Binding 레이아웃(<layout>)을 사용 중이지만, 
+        // 일단 빌드 에러 해결을 위해 일반적인 inflate 방식으로 처리합니다.
         val view = inflater.inflate(R.layout.fragment_bookmark, container, false)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.rvBookmarks)
+        
+        // [에러 해결] XML에 정의된 정확한 ID인 rvPlaylists를 사용합니다.
+        val recyclerView = view.findViewById<RecyclerView>(R.id.rvPlaylists)
 
-        // 어댑터 초기화
+        // 어댑터 및 리사이클러뷰 설정
         adapter = SongAdapter(emptyList())
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
+
+        // 플레이리스트 추가 버튼 리스너 (필요 시)
+        view.findViewById<View>(R.id.btnAddPlaylist).setOnClickListener {
+            // 여기에 플레이리스트 추가 로직 연결
+        }
 
         loadBookmarks()
         return view
     }
 
     private fun loadBookmarks() {
-        // [에러 해결] BookmarkManager에서 곡을 가져와 어댑터에 전달
         val songs = BookmarkManager.getSongs(currentPlaylist)
-        
-        // 만약 SongAdapter에 submitList를 추가했다면 아래 코드가 작동합니다.
-        // 혹시 모르니 명시적으로 updateData도 호출 가능하게 설계했습니다.
-        adapter.updateData(songs) 
+        adapter.updateData(songs)
     }
 
     override fun onResume() {
