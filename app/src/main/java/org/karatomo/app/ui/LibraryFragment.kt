@@ -20,7 +20,6 @@ class LibraryFragment : Fragment() {
     private var currentPlaylistName: String = ""
     private var currentBrandFilter: String = "전체"
 
-    // 괄호 제거 및 공백 정리 함수
     private fun cleanText(text: String): String {
         return text.replace(Regex("\\(.*?\\)"), "").trim()
     }
@@ -62,7 +61,6 @@ class LibraryFragment : Fragment() {
         val mergedMap = mutableMapOf<String, MergedSong>()
 
         rawSongs.forEach { s ->
-            // 괄호 빼고 trim한 값으로 키 생성
             val cTitle = cleanText(s.title)
             val cSinger = cleanText(s.singer)
             val key = "${cTitle}_${cSinger}"
