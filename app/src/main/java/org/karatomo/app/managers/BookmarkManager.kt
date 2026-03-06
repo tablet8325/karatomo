@@ -9,57 +9,87 @@ object BookmarkManager {
     private const val PREF_NAME = "BookmarkPrefs"
     private const val KEY_PLAYLISTS = "Playlists"
     
-    // 데이터를 담는 맵
-    private var playlists: MutableMap<String, MutableList<Song>> = mutableMapOf()
-    private var isLoaded = false
+    // 순서 유지를 위해 LinkedHashMap 사용
+    private var playlists: MutableMap<String, MutableList<Song>> = LinkedHashMap()
 
-    // 데이터를 안전하게 가져오기 위한 함수 (자동 로딩 포함)
-    private fun ensureLoaded(context: Context) {
-        if (!isLoaded) {
-            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            val json = prefs.getString(KEY_PLAYLISTS, null)
-            if (json != null) {
-                val type = object : TypeToken<MutableMap<String, MutableList<Song>>>() {}.type
-                playlists = Gson().fromJson(json, type) ?: mutableMapOf()
-            }
-            if (playlists.isEmpty()) {
-                playlists["기본 플레이리스트"] = mutableListOf()
-            }
-            isLoaded = true
+    fun init(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val json = prefs.getString(KEY_PLAYLISTS, null)
+        if (json != null) {
+            val type = object : TypeToken<LinkedHashMap<String, MutableList<Song>>>() {}.type
+            playlists = Gson().fromJson(json, type) ?: LinkedHashMap()
+        }
+        if (playlists.isEmpty()) {
+            playlists["기본 플레이리스트"] = mutableListOf()
+            saveData(context)
+        }
+    }
+
+    // 이름 편집
+    fun renamePlaylist(context: Context, oldName: String, newName: String): Boolean {
+        if (playlists.containsKey(newName) || oldName == newName) return false
+        val songs = playlists.remove(oldName) ?: return false
+        playlists[newName] = songs
+        saveData(context)
+        return true
+    }
+
+    // 삭제
+    fun deletePlaylist(context: Context, name: String) {
+        playlists.remove(name)
+        if (playlists.isEmpty()) playlists["기본 플레이리스트"] = mutableListOf()
+        saveData(context)
+    }
+
+    // 탭 순서 변경
+    fun movePlaylist(context: Context, fromPos: Int, toPos: Int) {
+        val keys = playlists.keys.toMutableList()
+        if (fromPos in keys.indices && toPos in keys.indices) {
+            val movedKey = keys.removeAt(fromPos)
+            keys.add(toPos, movedKey)
+            
+            val newMap = LinkedHashMap<String, MutableList<Song>>()
+            keys.forEach { key -> newMap[key] = playlists[key]!! }
+            playlists = newMap
+            saveData(context)
         }
     }
 
     fun addSong(context: Context, playlistName: String, song: Song): Boolean {
-        ensureLoaded(context)
         val playlist = playlists[playlistName] ?: return false
         if (playlist.any { it.no == song.no && it.brand == song.brand }) return false 
-
         playlist.add(song)
         saveData(context)
         return true
     }
 
     fun createPlaylist(context: Context, name: String) {
-        ensureLoaded(context)
         if (!playlists.containsKey(name)) {
             playlists[name] = mutableListOf()
             saveData(context)
         }
     }
 
-    // 이름 목록을 가져올 때도 안전하게 로딩 확인
-    fun getPlaylistNames(context: Context? = null): List<String> {
-        // context가 있으면 로딩 확인, 없으면 현재 메모리값 반환
-        return playlists.keys.toList()
+    fun getSongs(name: String): List<Song> = playlists[name] ?: emptyList()
+    fun getPlaylistNames(): List<String> = playlists.keys.toList()
+
+    fun moveSong(context: Context, playlistName: String, fromPos: Int, toPos: Int) {
+        val playlist = playlists[playlistName] ?: return
+        if (fromPos in playlist.indices && toPos in playlist.indices) {
+            val movedItem = playlist.removeAt(fromPos)
+            playlist.add(toPos, movedItem)
+            saveData(context)
+        }
     }
 
-    fun getSongs(name: String): List<Song> = playlists[name] ?: emptyList()
+    fun removeSong(context: Context, playlistName: String, song: Song) {
+        playlists[playlistName]?.remove(song)
+        saveData(context)
+    }
 
     private fun saveData(context: Context) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val json = Gson().toJson(playlists)
         prefs.edit().putString(KEY_PLAYLISTS, json).apply()
     }
-    
-    // 순서 변경 등 나머지 메서드도 동일하게 ensureLoaded(context)를 첫 줄에 넣어주면 완벽합니다.
 }
