@@ -70,23 +70,28 @@ class NewSongFragment : Fragment() {
 
     private fun loadNewSongs() {
         val selectedMonth = spinnerMonth.selectedItem?.toString() ?: return
-        progressBar.visibility = View.VISIBLE
+        val apiUrl = "https://api.manana.kr/karaoke/release.json?release=$selectedMonth&brand=$currentBrand"
         
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+        // [중요] 빌드 후 이 주소를 직접 확인해보세요.
+        android.widget.Toast.makeText(requireContext(), "URL: $apiUrl", android.widget.Toast.LENGTH_LONG).show()
+    
+        progressBar.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
-                // KaraokeApi.service.getReleaseSongs(날짜, 브랜드) 호출
-                val list = KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
-                
-                withContext(Dispatchers.Main) {
+                val list = org.karatomo.app.network.KaraokeApi.service.getReleaseSongs(selectedMonth, currentBrand)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     if (!isAdded) return@withContext
                     progressBar.visibility = View.GONE
+                    if (list.isEmpty()) {
+                        // 결과 없음 처리
+                        android.widget.Toast.makeText(requireContext(), "해당 조건의 신곡이 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                    }
                     adapter.updateData(list)
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    if (!isAdded) return@withContext
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "신곡 데이터를 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(requireContext(), "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
